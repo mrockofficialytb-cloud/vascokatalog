@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CustomerType {
+  B2C
+  B2B_SMALL
+  B2B_BIG
+}
+
+enum AccountStatus {
+  ACTIVE
+  PENDING
+  DISABLED
+}
+
+enum BuyerType {
+  PERSON
+  COMPANY
+}
+
+enum VolumeTier {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String?
+  name         String?
+  customerType CustomerType  @default(B2C)
+  status       AccountStatus @default(ACTIVE)
+
+  // Kontakty
+  firstName    String?
+  lastName     String?
+  phone        String?
+
+  // Adresa
+  street       String?
+  houseNumber  String?
+  city         String?
+  zip          String?
+
+  // Segmentace (už máš)
+  buyerType    BuyerType     @default(PERSON)
+  volume       VolumeTier    @default(SMALL)
+
+  // Firma (už máš)
+  companyName  String?
+  ico          String?
+  dic          String?       // ✅ DIČ nepovinné
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  cart         Cart?
+  inquiries    Inquiry[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  sku         String?  @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+
+  prices      Price[]
+
+  cartItems    CartItem[]
+  inquiryItems InquiryItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Price {
+  id           String       @id @default(cuid())
+  productId    String
+  customerType CustomerType
+  amountCzk    Int
+  currency     String       @default("CZK")
+
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, customerType])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+model Inquiry {
+  id                   String        @id @default(cuid())
+  userId               String
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  status               InquiryStatus @default(NEW)
+  note                 String?
+  customerTypeSnapshot CustomerType
+  statusSnapshot       AccountStatus
+
+  items                InquiryItem[]
+
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+}
+
+model InquiryItem {
+  id                   String   @id @default(cuid())
+  inquiryId            String
+  productId            String
+
+  skuSnapshot          String?
+  nameSnapshot         String
+  quantity             Int
+
+  unitPriceCzkSnapshot Int?
+  currencySnapshot     String   @default("CZK")
+
+  inquiry              Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  product              Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
