@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminEmail } from "@/lib/admin";
-import { Prisma } from "@prisma/client";
+import { InquiryStatus } from "@prisma/client";
 
-const ALLOWED: Prisma.InquiryStatus[] = ["NEW", "IN_PROGRESS", "DONE", "CANCELED"];
+const ALLOWED: InquiryStatus[] = ["NEW", "IN_PROGRESS", "DONE", "CANCELED"];
 
 export async function POST(req: Request) {
   try {
@@ -21,18 +21,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Chybí inquiryId." }, { status: 400 });
     }
 
-    if (!ALLOWED.includes(statusRaw as Prisma.InquiryStatus)) {
+    if (!ALLOWED.includes(statusRaw as InquiryStatus)) {
       return NextResponse.json(
         { error: `Neplatný status: ${statusRaw}` },
         { status: 400 }
       );
     }
 
-    const status = statusRaw as Prisma.InquiryStatus;
-
     await prisma.inquiry.update({
       where: { id: inquiryId },
-      data: { status },
+      data: { status: statusRaw as InquiryStatus },
     });
 
     return NextResponse.redirect(new URL("/admin/inquiries", req.url));
