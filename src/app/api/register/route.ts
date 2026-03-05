@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { sendMail } from "@/lib/mailer";
 
 type Demand = "SMALL" | "MEDIUM" | "LARGE";
 
@@ -10,14 +11,53 @@ function mapDemandToCustomerType(demand: Demand) {
   return "B2C";
 }
 
-function mapDemandToStatus(demand: Demand) {
+function mapDemandToStatusAfterVerify(demand: Demand) {
   // Malý = hned aktivní, Střední/Velký = čeká na schválení
   return demand === "SMALL" ? "ACTIVE" : "PENDING";
 }
 
 function mapDemandToVolume(demand: Demand) {
-  // VolumeTier v DB: SMALL | MEDIUM | LARGE
-  return demand;
+  return demand; // VolumeTier: SMALL | MEDIUM | LARGE
+}
+
+function makeCode() {
+  // 6 číslic, bez 0 na začátku (ať lidi nemají "000123")
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function codeEmailHtml(code: string) {
+  return `
+  <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5">
+    <h2>Ověření e-mailu</h2>
+    <p>Pro dokončení registrace zadejte tento kód:</p>
+    <div style="font-size:28px;font-weight:700;letter-spacing:4px;padding:12px 16px;border:1px solid #ddd;display:inline-block;border-radius:10px">
+      ${code}
+    </div>
+    <p style="margin-top:16px;color:#555">Platnost kódu je 15 minut.</p>
+  </div>`;
+}
+
+async function createAndSendVerification(email: string) {
+  const code = makeCode();
+  const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+
+  // smaž staré tokeny pro tento email (ať je vždy jen 1 kód)
+  await prisma.verificationToken.deleteMany({ where: { identifier: email } });
+
+  await prisma.verificationToken.create({
+    data: {
+      identifier: email,
+      token: code,
+      expires,
+    },
+  });
+
+  await sendMail({
+    to: email,
+    subject: "VASCO katalog – ověřovací kód",
+    html: codeEmailHtml(code),
+    text: `Váš ověřovací kód je: ${code} (platnost 15 minut)`,
+  });
 }
 
 export async function POST(req: Request) {
@@ -61,10 +101,7 @@ export async function POST(req: Request) {
     }
 
     if (!consent) {
-      return NextResponse.json(
-        { error: "Musíš potvrdit pravdivost údajů a souhlas." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Musíš potvrdit pravdivost údajů a souhlas." }, { status: 400 });
     }
 
     if (!firstName || !lastName) {
@@ -83,7 +120,6 @@ export async function POST(req: Request) {
     if (isCompany) {
       if (!companyName) return NextResponse.json({ error: "Vyplň název firmy." }, { status: 400 });
       if (!ico) return NextResponse.json({ error: "Vyplň IČO." }, { status: 400 });
-      // DIČ je nepovinné
     }
 
     const exists = await prisma.user.findUnique({ where: { email } });
@@ -92,25 +128,21 @@ export async function POST(req: Request) {
     const passwordHash = await bcrypt.hash(password, 12);
 
     const customerType = mapDemandToCustomerType(demandLevel);
-    const status = mapDemandToStatus(demandLevel);
     const volume = mapDemandToVolume(demandLevel);
 
+    // 👇 klíč: dokud není ověřeno, účet je DISABLED (nepůjde login)
     const user = await prisma.user.create({
       data: {
         email,
         passwordHash,
 
-        // pokud máš v DB firstName/lastName, nech to klidně ukládat taky
-        // (když je nemáš ve schema, smaž tyhle 2 řádky)
         firstName,
         lastName,
-
         name: `${firstName} ${lastName}`.trim(),
         phone,
 
-        // NIKDY neposílej isCompany do Prisma (v modelu není)
-        buyerType: buyerType as any,     // PERSON / COMPANY
-        volume: volume as any,           // SMALL / MEDIUM / LARGE
+        buyerType: buyerType as any,
+        volume: volume as any,
 
         companyName: isCompany ? companyName : null,
         ico: isCompany ? ico : null,
@@ -122,12 +154,22 @@ export async function POST(req: Request) {
         zip,
 
         customerType: customerType as any,
-        status: status as any,
+        status: "DISABLED" as any,
       },
       select: { id: true },
     });
 
-    return NextResponse.json({ ok: true, userId: user.id }, { status: 200 });
+    await createAndSendVerification(email);
+
+    return NextResponse.json(
+      {
+        ok: true,
+        userId: user.id,
+        next: "VERIFY_EMAIL",
+        statusAfterVerify: mapDemandToStatusAfterVerify(demandLevel),
+      },
+      { status: 200 }
+    );
   } catch (e: any) {
     console.error(e);
     return NextResponse.json({ error: "Chyba serveru." }, { status: 500 });

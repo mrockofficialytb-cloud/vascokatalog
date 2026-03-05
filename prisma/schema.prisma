@@ -15,6 +15,10 @@ enum CustomerType {
 }
 
 enum AccountStatus {
+  // NOVĚ: účet vytvořen, ale e-mail ještě nebyl ověřen kódem
+  PENDING_EMAIL
+
+  // už máš:
   ACTIVE
   PENDING
   DISABLED
@@ -37,7 +41,9 @@ model User {
   passwordHash String?
   name         String?
   customerType CustomerType  @default(B2C)
-  status       AccountStatus @default(ACTIVE)
+
+  // ✅ změna: default dáme PENDING_EMAIL (anti-spam)
+  status       AccountStatus @default(PENDING_EMAIL)
 
   // Kontakty
   firstName    String?
@@ -50,14 +56,17 @@ model User {
   city         String?
   zip          String?
 
-  // Segmentace (už máš)
+  // Segmentace
   buyerType    BuyerType     @default(PERSON)
   volume       VolumeTier    @default(SMALL)
 
-  // Firma (už máš)
+  // Firma
   companyName  String?
   ico          String?
-  dic          String?       // ✅ DIČ nepovinné
+  dic          String?
+
+  // ✅ NOVĚ: e-mail ověřovací kód (1 aktivní kód na uživatele)
+  emailVerification EmailVerificationCode?
 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -71,17 +80,18 @@ model User {
 model Product {
   id          String   @id @default(cuid())
   sku         String?  @unique
-  slug        String  @unique
+  slug        String   @unique
   name        String
   description String?
   isActive    Boolean  @default(true)
 
   prices      Price[]
-	imageUrl    String?
-	collection  ProductCollection?
+  imageUrl    String?
+  collection  ProductCollection?
+
   cartItems    CartItem[]
   inquiryItems InquiryItem[]
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -203,4 +213,26 @@ model InquiryItem {
 
   inquiry              Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
   product              Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+//
+// ✅ NOVÝ MODEL: Ověření e-mailu kódem (anti-spam)
+// - držíme HASH kódu (ne samotný kód)
+// - expires = platnost (např. 15 min)
+// - attempts = počítadlo pokusů
+//
+model EmailVerificationCode {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  codeHash    String
+  expiresAt   DateTime
+  attempts    Int      @default(0)
+  lastSentAt  DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([expiresAt])
 }

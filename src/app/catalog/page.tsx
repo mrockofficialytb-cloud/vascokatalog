@@ -127,14 +127,14 @@ export default async function CatalogPage() {
           {!isLoggedIn ? (
             <div className="flex items-center gap-3">
               <Link className="text-sm font-semibold text-zinc-200 hover:text-white" href="/login">
-                Přihlásit
+                Přihlásit se
               </Link>
               <span className="text-zinc-700">•</span>
               <Link
                 className="text-sm font-semibold text-zinc-200 hover:text-white"
                 href="/register"
               >
-                Registrovat
+                Zaregistrovat se
               </Link>
             </div>
           ) : (
