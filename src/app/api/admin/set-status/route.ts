@@ -1,29 +1,35 @@
+import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
+import { isAdminEmail } from "@/lib/admin";
+import { AccountStatus } from "@prisma/client";
 
-const ADMIN_EMAIL = "mrockuw@seznam.cz";
-const ALLOWED = new Set(["ACTIVE", "PENDING", "DISABLED"]);
+const ALLOWED: AccountStatus[] = ["ACTIVE", "PENDING", "DISABLED"];
 
 export async function POST(req: Request) {
   const session = await auth();
 
-  if (!session?.user?.email || session.user.email.toLowerCase() !== ADMIN_EMAIL) {
-    return new Response("Unauthorized", { status: 401 });
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const formData = await req.formData();
-  const userId = formData.get("userId");
-  const status = formData.get("status");
+  const userId = (formData.get("userId") ?? "").toString().trim();
+  const statusRaw = (formData.get("status") ?? "").toString().trim().toUpperCase();
 
-  if (typeof userId !== "string" || typeof status !== "string" || !ALLOWED.has(status)) {
-    return new Response("Bad Request", { status: 400 });
+  if (!userId) {
+    return NextResponse.json({ error: "Chybí userId." }, { status: 400 });
+  }
+
+  if (!ALLOWED.includes(statusRaw as AccountStatus)) {
+    return NextResponse.json({ error: "Neplatný status." }, { status: 400 });
   }
 
   await prisma.user.update({
     where: { id: userId },
-    data: { status: status as any },
+    data: { status: statusRaw as AccountStatus },
   });
 
-  redirect("/admin/users");
+  // po akci zpět na uživatele
+  return NextResponse.redirect(new URL("/admin/users", req.url));
 }

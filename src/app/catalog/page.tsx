@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { AddToCart } from "@/components/AddToCart";
 import { isAdminEmail } from "@/lib/admin";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -94,14 +95,17 @@ export default async function CatalogPage() {
       {/* Top bar */}
       <header className="sticky top-0 z-20 border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          {/* Left brand */}
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl border border-zinc-800 bg-zinc-900/50" />
-            <div className="leading-tight">
-              <div className="text-sm font-semibold tracking-tight">VASCO</div>
-              <div className="text-xs text-zinc-400">B2B katalog</div>
-            </div>
-          </div>
+       {/* Left brand */}
+<Link href="/catalog" className="flex items-center">
+  <Image
+  src="/vascologo.png"
+  alt="VASCO"
+  width={400}
+  height={200}
+  priority
+  style={{ height: "100px", width: "auto" }}
+/>
+</Link>
 
           {/* Right actions */}
           {!isLoggedIn ? (
@@ -199,9 +203,9 @@ export default async function CatalogPage() {
       <div className="mx-auto max-w-6xl px-4 py-10">
         {/* Hero */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight">Katalog produktů</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">KATALOG PRODUKTŮ</h1>
           <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-            Vytvoř si poptávku. Poptávka je nezávazná – ceny budou potvrzeny v nabídce.
+            Vytvořte si poptávku. Poptávka je nezávazná – ceny budou potvrzeny v nabídce.
           </p>
 
           {isLoggedIn && status === "PENDING" && (

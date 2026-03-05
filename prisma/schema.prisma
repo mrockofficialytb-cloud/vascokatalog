@@ -75,7 +75,7 @@ model Product {
   isActive    Boolean  @default(true)
 
   prices      Price[]
-
+	imageUrl    String?
   cartItems    CartItem[]
   inquiryItems InquiryItem[]
   
