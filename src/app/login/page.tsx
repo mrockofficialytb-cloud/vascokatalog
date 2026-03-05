@@ -112,12 +112,12 @@ export default function LoginPage() {
               )}
             </form>
           </Card>
-		  <Muted className="mt-2">
-              Nemáte účet?{" "}
-              <Link className="underline hover:text-white" href="/register">
-                Zaregistrovat se
-              </Link>
-            </Muted>
+		 <p className="mt-2 text-sm text-zinc-400">
+  Nemáte účet?{" "}
+  <Link className="underline hover:text-white" href="/register">
+    Zaregistrovat se
+  </Link>
+</p>
         </div>
       </Container>
     </main>

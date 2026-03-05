@@ -1,23 +1,47 @@
 import Link from "next/link";
 
-export function Container({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto w-full max-w-5xl px-4 py-10">{children}</div>;
+export function Container({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={`mx-auto w-full max-w-5xl px-4 py-10 ${className}`}>{children}</div>;
 }
 
-export function Card({ children }: { children: React.ReactNode }) {
+export function Card({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-sm">
+    <div className={`rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-sm ${className}`}>
       {children}
     </div>
   );
 }
 
-export function H1({ children }: { children: React.ReactNode }) {
-  return <h1 className="text-2xl font-semibold tracking-tight">{children}</h1>;
+export function H1({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <h1 className={`text-2xl font-semibold tracking-tight ${className}`}>{children}</h1>;
 }
 
-export function Muted({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-zinc-400">{children}</p>;
+export function Muted({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <p className={`text-sm text-zinc-400 ${className}`}>{children}</p>;
 }
 
 export function Button(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
@@ -72,17 +96,33 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   );
 }
 
-export function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+export function NavLink({
+  href,
+  children,
+  className = "",
+}: {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <Link href={href} className="text-sm font-semibold text-zinc-200 hover:text-white">
+    <Link href={href} className={`text-sm font-semibold text-zinc-200 hover:text-white ${className}`}>
       {children}
     </Link>
   );
 }
 
-export function Badge({ children }: { children: React.ReactNode }) {
+export function Badge({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <span className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950/40 px-2.5 py-1 text-xs font-semibold text-zinc-200">
+    <span
+      className={`inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950/40 px-2.5 py-1 text-xs font-semibold text-zinc-200 ${className}`}
+    >
       {children}
     </span>
   );
