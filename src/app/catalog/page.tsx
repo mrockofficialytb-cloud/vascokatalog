@@ -2,15 +2,17 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { AddToCart } from "@/components/AddToCart";
 import { isAdminEmail } from "@/lib/admin";
 import Image from "next/image";
 
 type Product = {
   id: string;
   sku: string | null;
+  slug: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
+  collection: string | null;
   price: { amountCzk: number; currency: string } | null;
 };
 
@@ -45,6 +47,22 @@ function getInitials(name?: string | null) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+// fallback jen kdyby collection někde chyběla
+const COLLECTION_BY_SKU: Record<string, string> = {
+  "LAM-001": "CLASSIC",
+  "LAM-002": "PREMIUM",
+  "LAM-003": "SPAZIO",
+  "LAM-004": "MODULLO",
+  // "LAM-005": "RIFFCELLO",
+};
+
+function getCollection(p: Product) {
+  const direct = (p.collection ?? "").trim();
+  if (direct) return direct.toUpperCase();
+  const sku = (p.sku ?? "").trim().toUpperCase();
+  return sku && COLLECTION_BY_SKU[sku] ? COLLECTION_BY_SKU[sku] : "COLLECTION";
+}
+
 export default async function CatalogPage() {
   const session = await auth();
 
@@ -71,14 +89,12 @@ export default async function CatalogPage() {
   const email = session?.user?.email ?? null;
   const isAdmin = isAdminEmail(email);
 
-  // ✅ jméno (když existuje)
   const userName =
     (session?.user as any)?.name ||
     (session as any)?.name ||
     (session as any)?.user?.name ||
     null;
 
-  // ✅ co zobrazit nahoře v bublině
   const primaryLabel = userName || email || "Uživatel";
 
   const cartCount =
@@ -95,17 +111,17 @@ export default async function CatalogPage() {
       {/* Top bar */}
       <header className="sticky top-0 z-20 border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-       {/* Left brand */}
-<Link href="/catalog" className="flex items-center">
-  <Image
-  src="/vascologo.png"
-  alt="VASCO"
-  width={400}
-  height={200}
-  priority
-  style={{ height: "100px", width: "auto" }}
-/>
-</Link>
+          {/* Left brand */}
+          <Link href="/catalog" className="flex items-center">
+            <Image
+              src="/vascologo.png"
+              alt="VASCO"
+              width={400}
+              height={200}
+              priority
+              style={{ height: "100px", width: "auto" }}
+            />
+          </Link>
 
           {/* Right actions */}
           {!isLoggedIn ? (
@@ -114,7 +130,10 @@ export default async function CatalogPage() {
                 Přihlásit
               </Link>
               <span className="text-zinc-700">•</span>
-              <Link className="text-sm font-semibold text-zinc-200 hover:text-white" href="/register">
+              <Link
+                className="text-sm font-semibold text-zinc-200 hover:text-white"
+                href="/register"
+              >
                 Registrovat
               </Link>
             </div>
@@ -132,32 +151,29 @@ export default async function CatalogPage() {
                   </span>
                 </Link>
 
-                {/* User box (ADMIN = jméno, ostatní = email) */}
-               <div className="hidden min-w-[320px] h-12 items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/60 px-4 sm:flex">
+                {/* User box */}
+                <div className="hidden h-12 min-w-[320px] items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/60 px-4 sm:flex">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+                    {getInitials(userName || email || "")}
+                  </div>
 
-  {/* Avatar */}
-  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
-    {getInitials(userName || email || "")}
-  </div>
+                  <div className="flex flex-col leading-tight">
+                    <span className="whitespace-nowrap text-sm font-semibold text-zinc-100">
+                      {primaryLabel}
+                    </span>
 
-  {/* User info */}
-  <div className="flex flex-col leading-tight">
-    <span className="text-sm font-semibold text-zinc-100 whitespace-nowrap">
-      {primaryLabel}
-    </span>
-
-    {isAdmin ? (
-      <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-400">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-        Administrátor
-      </span>
-    ) : (
-      <span className="mt-1 text-xs font-semibold text-zinc-400">
-        {customerTypeCz(customerType)} • {statusCz(status)}
-      </span>
-    )}
-  </div>
-</div>
+                    {isAdmin ? (
+                      <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                        Administrátor
+                      </span>
+                    ) : (
+                      <span className="mt-1 text-xs font-semibold text-zinc-400">
+                        {customerTypeCz(customerType)} • {statusCz(status)}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
                 {/* Odhlásit */}
                 <form action="/logout" method="post">
@@ -166,7 +182,7 @@ export default async function CatalogPage() {
                   </button>
                 </form>
 
-                {/* ADMIN PANEL úplně vpravo */}
+                {/* Admin */}
                 {isAdmin && (
                   <Link
                     href="/admin"
@@ -179,18 +195,14 @@ export default async function CatalogPage() {
                       strokeWidth="1.8"
                       viewBox="0 0 24 24"
                     >
-                      {/* dveře */}
                       <path d="M4 3h10v18H4z" />
-                      {/* klika */}
                       <circle cx="11" cy="12" r="0.8" fill="currentColor" />
-                      {/* šipka ven */}
                       <path
                         d="M14 12h6M17 9l3 3-3 3"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
                     </svg>
-
                     <span>Administrace</span>
                   </Link>
                 )}
@@ -205,7 +217,7 @@ export default async function CatalogPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-semibold tracking-tight">KATALOG PRODUKTŮ</h1>
           <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-            Vytvořte si poptávku. Poptávka je nezávazná – ceny budou potvrzeny v nabídce.
+            Vyberte produkt a zobrazte detail. Ceny budou potvrzeny v nabídce.
           </p>
 
           {isLoggedIn && status === "PENDING" && (
@@ -219,58 +231,68 @@ export default async function CatalogPage() {
         </div>
 
         {/* Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.products.map((p) => (
-            <div
-              key={p.id}
-              className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-5 shadow-sm transition hover:border-zinc-800 hover:bg-zinc-900/40"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-base font-semibold leading-snug">{p.name}</div>
-                  <div className="mt-2 inline-flex items-center gap-2">
-                    {p.sku && (
-                      <span className="rounded-full border border-zinc-800 bg-zinc-950/40 px-2.5 py-1 text-xs font-semibold text-zinc-200">
-                        {p.sku}
-                      </span>
-                    )}
-                    <span className="rounded-full border border-zinc-800 bg-zinc-950/40 px-2.5 py-1 text-xs font-semibold text-zinc-300">
-                      {p.price ? "Cena dostupná" : "Cena skrytá"}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {data.products.map((p) => {
+            const img = p.imageUrl || "/products/placeholder.jpg";
+            const collection = getCollection(p);
+
+            return (
+              <div
+                key={p.id}
+                className="group overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-900/25 shadow-sm transition hover:border-zinc-800 hover:bg-zinc-900/35"
+              >
+                {/* IMAGE */}
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-950/40">
+                  <Image
+                    src={img}
+                    alt={p.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                  />
+
+                  {/* collection badge */}
+                  <div className="absolute left-3 top-3">
+                    <span className="rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-100 backdrop-blur">
+                      {collection}
                     </span>
                   </div>
                 </div>
 
-                <div className="h-10 w-10 shrink-0 rounded-xl border border-zinc-800 bg-zinc-950/40" />
-              </div>
-
-              <div className="mt-4 text-sm text-zinc-400">
-                {p.description ? clampText(p.description) : "—"}
-              </div>
-
-              <div className="mt-6">
-                <div className="text-xs text-zinc-500">Cena</div>
-                <div className="mt-1 text-lg font-semibold">
-                  {p.price ? (
-                    formatCzk(p.price.amountCzk)
-                  ) : (
-                    <span className="text-zinc-500">Po přihlášení / schválení</span>
-                  )}
-                </div>
-
-                {isLoggedIn ? (
-                  <AddToCart productId={p.id} />
-                ) : (
-                  <div className="mt-5 text-sm text-zinc-400">
-                    Pro tvorbu poptávky se prosím{" "}
-                    <Link className="underline" href="/login">
-                      přihlas
-                    </Link>
-                    .
+                {/* CONTENT */}
+                <div className="p-5">
+                  <div className="min-w-0">
+                    <div className="truncate text-base font-semibold leading-snug">{p.name}</div>
+                    <div className="mt-2 text-sm text-zinc-400">
+                      {p.description ? clampText(p.description, 90) : "—"}
+                    </div>
                   </div>
-                )}
+
+                  {/* PRICE */}
+                  <div className="mt-5">
+                    <div className="text-xs text-zinc-500">Cena</div>
+                    <div className="mt-1 text-2xl font-semibold tracking-tight">
+                      {p.price ? (
+                        formatCzk(p.price.amountCzk)
+                      ) : (
+                        <span className="text-zinc-500">Po přihlášení / schválení</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* CTA full width */}
+                  <div className="mt-5">
+                    <Link
+  href={`/catalog/${p.slug}`}
+  className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-white text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
+>
+  Zobrazit produkt
+</Link>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {data.products.length === 0 && (

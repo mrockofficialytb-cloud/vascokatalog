@@ -23,8 +23,11 @@ export async function GET() {
     select: {
       id: true,
       sku: true,
+      slug: true,          // ✅
       name: true,
       description: true,
+      imageUrl: true,      // ✅
+      collection: true,    // ✅
       prices:
         isLoggedIn && status === "ACTIVE" && customerType
           ? {
@@ -40,8 +43,11 @@ export async function GET() {
   const out = products.map((p: any) => ({
     id: p.id,
     sku: p.sku,
+    slug: p.slug,                 // ✅
     name: p.name,
     description: p.description,
+    imageUrl: p.imageUrl ?? null, // ✅
+    collection: p.collection ?? null, // ✅
     price: p.prices?.[0] ?? null,
   }));
 

@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 enum CustomerType {
@@ -70,12 +71,14 @@ model User {
 model Product {
   id          String   @id @default(cuid())
   sku         String?  @unique
+  slug        String  @unique
   name        String
   description String?
   isActive    Boolean  @default(true)
 
   prices      Price[]
 	imageUrl    String?
+	collection  ProductCollection?
   cartItems    CartItem[]
   inquiryItems InquiryItem[]
   
@@ -136,6 +139,14 @@ enum InquiryStatus {
   IN_PROGRESS
   DONE
   CANCELED
+}
+
+enum ProductCollection {
+  CLASSIC
+  PREMIUM
+  SPAZIO
+  MODULLO
+  RIFFCELLO
 }
 
 model Cart {
