@@ -54,9 +54,9 @@ export default function LoginPage() {
           </Link>
 
           <div className="flex items-center gap-3">
-            <NavLink href="/catalog" className="text-sm font-semibold text-zinc-200 hover:text-white">
-              ← Zpět do katalogu
-            </NavLink>
+            <Link href="/catalog" className="text-sm font-semibold text-zinc-200 hover:text-white">
+  ← Zpět do katalogu
+</Link>
           </div>
         </div>
       </header>
