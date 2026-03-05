@@ -56,10 +56,10 @@ export default async function ProductDetailPage({
 
   // Demo dekory (vzorky pod fotkou) – později to napojíme na DB (varianty/dekory)
   const decorThumbs = [
-    "/products/decors/decor-1.jpg",
-    "/products/decors/decor-2.jpg",
-    "/products/decors/decor-3.jpg",
-    "/products/decors/decor-4.jpg",
+    "/products/decors/ash.jpeg",
+    "/products/decors/black-oak.jpeg",
+    "/products/decors/classic-oak.jpeg",
+    "/products/decors/white-oak.jpeg",
   ];
 
   return (

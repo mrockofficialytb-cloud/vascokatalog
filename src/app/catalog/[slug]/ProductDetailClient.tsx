@@ -119,7 +119,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
           <div className="mt-8 grid gap-5">
             {/* decor dropdown */}
             <div>
-              <div className="mb-2 text-xs font-semibold text-zinc-400">Varianta / dekor</div>
+              <div className="mb-2 text-xs font-semibold text-zinc-400">Vyberte dekor:</div>
               <details className="group rounded-2xl border border-zinc-800 bg-zinc-950/40">
                 <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-zinc-100 flex items-center justify-between">
                   <span>{decorLabel}</span>
@@ -144,7 +144,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
 
             {/* felt toggle */}
             <div>
-              <div className="mb-2 text-xs font-semibold text-zinc-400">Filc</div>
+              <div className="mb-2 text-xs font-semibold text-zinc-400">Vyberte variantu:</div>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -201,23 +201,42 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             </div>
           </div>
 
-          {/* CTA */}
-          <div className="mt-8">
-            {canOrder ? (
-              <button
-                type="button"
-                className="h-12 w-full rounded-2xl bg-white text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
-                onClick={() => {
-                  alert(
-                    `DEMO: Přidat do poptávky\n\nProdukt: ${product.name}\nDekor: ${decorLabel}\nFilc: ${
-                      withFelt === "WITH" ? "S filcem" : "Bez filcu"
-                    }\nKs: ${safeQty}\n\nDalší krok: napojíme to na /api/cart/add (varianty + qty).`
-                  );
-                }}
-              >
-                Přidat do poptávky
-              </button>
-            ) : (
+         {/* CTA */}
+<div className="mt-8">
+  {canOrder ? (
+    <button
+      type="button"
+      className="h-12 w-full rounded-2xl bg-white text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
+      onClick={async () => {
+        try {
+          const res = await fetch("/api/cart/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              productId: product.id,
+              qty: safeQty,
+              decor: decorLabel,
+              felt: withFelt === "WITH" ? "S_FILCEM" : "BEZ_FILCU",
+            }),
+          });
+
+          if (!res.ok) {
+            const txt = await res.text();
+            alert("Chyba při přidání do poptávky: " + txt);
+            return;
+          }
+
+          alert("Produkt přidán do poptávky");
+        } catch (err) {
+          alert("Chyba komunikace se serverem");
+        }
+      }}
+    >
+      Přidat do poptávky
+    </button>
+  ) : (
               <Link
                 href="/login"
                 className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-white text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
@@ -228,7 +247,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
           </div>
 
           <div className="mt-4 text-xs text-zinc-500">
-            Později: napojíme varianty/dekory do DB + přenos do poptávky.
+           
           </div>
         </div>
       </div>
