@@ -8,11 +8,17 @@ const pass = process.env.SMTP_PASS;
 
 const from = process.env.MAIL_FROM || "VASCO katalog <no-reply@vascokatalog>";
 
-if (!host || !user || !pass) {
-  console.warn("[mailer] Missing SMTP envs (SMTP_HOST/SMTP_USER/SMTP_PASS). Emails will fail.");
-}
-
-export async function sendMail(opts: { to: string; subject: string; html: string; text?: string }) {
+export async function sendMail(opts: {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+  attachments?: {
+    filename: string;
+    path?: string;
+    cid?: string;
+  }[];
+}) {
   const transporter = nodemailer.createTransport({
     host,
     port,
@@ -26,5 +32,6 @@ export async function sendMail(opts: { to: string; subject: string; html: string
     subject: opts.subject,
     text: opts.text,
     html: opts.html,
+    attachments: opts.attachments || [],
   });
 }

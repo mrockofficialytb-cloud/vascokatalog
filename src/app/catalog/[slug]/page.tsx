@@ -293,7 +293,14 @@ export default async function ProductDetailPage({
             name: product.name,
             description: product.description ?? "",
             collection,
-            priceLabel: price == null ? "Po přihlášení / schválení" : formatCzk(price),
+            priceLabel:
+  price == null ? (
+    <span className="text-[15px] text-zinc-200">
+      Ceny se zobrazí po schválení účtu
+    </span>
+  ) : (
+    formatCzk(price)
+  ),
             gallery,
             decorThumbs,
             decors,

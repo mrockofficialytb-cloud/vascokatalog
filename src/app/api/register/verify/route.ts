@@ -24,7 +24,6 @@ export async function POST(req: Request) {
     }
 
     if (token.expires.getTime() < Date.now()) {
-      // token je expirovaný
       await prisma.verificationToken.delete({
         where: { identifier_token: { identifier: email, token: code } },
       });
@@ -32,16 +31,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Kód vypršel. Pošli si prosím nový." }, { status: 400 });
     }
 
-    // Aktivace účtu
-    await prisma.user.update({
+    const user = await prisma.user.findUnique({
       where: { email },
-      data: { status: "ACTIVE" as any },
+      select: { id: true, volume: true, customerType: true },
     });
 
-    // Smazat všechny tokeny pro tento email (čistota)
-    await prisma.verificationToken.deleteMany({ where: { identifier: email } });
+    if (!user) {
+      return NextResponse.json({ error: "Uživatel neexistuje." }, { status: 404 });
+    }
 
-    return NextResponse.json({ ok: true });
+    // ✅ správná logika:
+    // SMALL = ACTIVE
+    // MEDIUM/LARGE = PENDING (čeká na schválení)
+    const nextStatus =
+      user.volume === "SMALL"
+        ? "ACTIVE"
+        : "PENDING";
+
+    await prisma.user.update({
+      where: { email },
+      data: { status: nextStatus as any },
+    });
+
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: email },
+    });
+
+    return NextResponse.json({ ok: true, status: nextStatus });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Ověření se nezdařilo." }, { status: 500 });

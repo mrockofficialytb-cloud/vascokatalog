@@ -275,7 +275,9 @@ export default async function CatalogPage() {
                       {p.price ? (
                         formatCzk(p.price.amountCzk)
                       ) : (
-                        <span className="text-zinc-500">Po přihlášení / schválení</span>
+                       <span className="text-[15px] text-zinc-200">
+  Ceny se zobrazí po schválení účtu
+</span>
                       )}
                     </div>
                   </div>

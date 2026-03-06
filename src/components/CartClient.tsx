@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Header from "@/components/Header";
 
 type Item = {
   productId: string;
@@ -75,6 +76,7 @@ export function CartClient({
 
   return (
     <div className="grid gap-6">
+	
       <div className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-5">
         <div className="text-sm font-semibold text-zinc-200">Položky</div>
 
@@ -98,7 +100,7 @@ export function CartClient({
                       <span className="font-semibold">{formatCzk(it.subtotalCzk!)}</span>
                     </div>
                   ) : (
-                    <div className="mt-2 text-sm text-zinc-500">Cena po schválení / přihlášení</div>
+                    <div className="mt-2 text-sm text-zinc-500">Ceny se zobrazí po schválení účtu</div>
                   )}
                 </div>
 

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CartClient } from "@/components/CartClient";
+import Header from "@/components/Header";
 
 function formatCzk(amountCzk: number) {
   const val = amountCzk / 100;
@@ -52,10 +53,11 @@ export default async function CartPage() {
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
+	<Header />
       <header className="border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div>
-            <div className="text-xl font-semibold tracking-tight">Poptávka</div>
+            <div className="text-xl font-semibold tracking-tight">POPTÁVKA</div>
             <div className="text-sm text-zinc-400">
               Nezávazná poptávka. Uvedené ceny budou potvrzeny v nabídce.
             </div>
