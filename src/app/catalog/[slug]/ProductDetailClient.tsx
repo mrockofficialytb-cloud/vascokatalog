@@ -11,7 +11,7 @@ type Props = {
     name: string;
     description: string;
     collection: string;
-    priceLabel: string;
+    priceLabel: React.ReactNode;
     gallery: string[];
     decorThumbs: string[];
     decors: { id: string; label: string; swatchUrl: string }[];
