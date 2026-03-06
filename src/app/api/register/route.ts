@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { sendMail } from "@/lib/mailer";
+import path from "path";
 
 type Demand = "SMALL" | "MEDIUM" | "LARGE";
 
@@ -108,7 +109,7 @@ async function createAndSendVerification(email: string) {
     attachments: [
       {
         filename: "vascologo.png",
-        path: "./public/vascologo.png",
+		path: path.join(process.cwd(), "public", "vascologo.png"),
         cid: "vasco-logo",
       },
     ],

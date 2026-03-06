@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/mailer";
+import path from "path";
 
 function makeCode() {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -111,7 +112,7 @@ export async function POST(req: Request) {
       attachments: [
         {
           filename: "vascologo.png",
-          path: "./public/vascologo.png",
+          path: path.join(process.cwd(), "public", "vascologo.png"),
           cid: "vasco-logo",
         },
       ],
