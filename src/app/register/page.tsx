@@ -1,23 +1,27 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Demand = "SMALL" | "MEDIUM" | "LARGE";
 type Step = "FORM" | "VERIFY";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [step, setStep] = useState<Step>("FORM");
+  const verifyParam = searchParams.get("verify");
+  const emailParam = searchParams.get("email");
+
+  const [step, setStep] = useState<Step>(verifyParam === "1" ? "VERIFY" : "FORM");
 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
 
   // Přihlašovací údaje
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(emailParam ?? "");
   const [password, setPassword] = useState("");
 
   // Kontaktní údaje
@@ -46,6 +50,13 @@ export default function RegisterPage() {
   // Email verification
   const [code, setCode] = useState("");
   const [resendLoading, setResendLoading] = useState(false);
+
+  useEffect(() => {
+    setStep(verifyParam === "1" ? "VERIFY" : "FORM");
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [verifyParam, emailParam]);
 
   const isValid = useMemo(() => {
     if (!email.trim()) return false;
@@ -131,8 +142,8 @@ export default function RegisterPage() {
 
       setLoading(false);
       setOk("Účet byl vytvořen. Ověřovací kód jsme poslali na e-mail.");
-      setStep("VERIFY");
       setCode("");
+      router.push(`/register?verify=1&email=${encodeURIComponent(normalizeEmail(email))}`);
     } catch {
       setErr("Registrace se nezdařila.");
       setLoading(false);
@@ -290,10 +301,10 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setStep("FORM");
                     setOk(null);
                     setErr(null);
                     setCode("");
+                    router.push("/register");
                   }}
                   className="text-sm font-semibold text-zinc-300 hover:text-white"
                 >
