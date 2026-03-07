@@ -109,13 +109,15 @@ export default async function AdminInquiriesPage() {
         },
       },
       items: {
-        orderBy: { id: "asc" },
-        select: {
-          quantity: true,
-          nameSnapshot: true,
-          unitPriceCzkSnapshot: true,
-        },
-      },
+  orderBy: { id: "asc" },
+  select: {
+    quantity: true,
+    nameSnapshot: true,
+    decorSnapshot: true,
+    feltSnapshot: true,
+    unitPriceCzkSnapshot: true,
+  },
+},
     },
   });
 
@@ -233,9 +235,21 @@ export default async function AdminInquiriesPage() {
                               <div className="col-span-3 text-zinc-200">
                                 {it.quantity} ks
                               </div>
-                              <div className="col-span-5 truncate text-zinc-100">
-                                {it.nameSnapshot}
-                              </div>
+                              <div className="col-span-5">
+  <div className="truncate text-zinc-100">{it.nameSnapshot}</div>
+
+  {it.decorSnapshot && (
+    <div className="mt-1 text-xs text-zinc-400">
+      Dekor: {it.decorSnapshot}
+    </div>
+  )}
+
+  {it.feltSnapshot && (
+    <div className="text-xs text-zinc-400">
+      Varianta: {it.feltSnapshot}
+    </div>
+  )}
+</div>
                               <div className="col-span-2 text-right text-zinc-200">
                                 {formatCzk(unit)}
                               </div>
