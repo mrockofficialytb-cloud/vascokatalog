@@ -107,9 +107,24 @@ export default async function AdminInquiryDetailPage({
               <div key={it.id} className="rounded-2xl border border-zinc-900 bg-zinc-950/30 p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <div className="font-semibold">{it.nameSnapshot}</div>
-                    <div className="mt-1 text-xs text-zinc-500">{it.skuSnapshot ?? ""}</div>
-                  </div>
+  <div className="font-semibold">{it.nameSnapshot}</div>
+
+  {it.skuSnapshot && (
+    <div className="mt-1 text-xs text-zinc-500">{it.skuSnapshot}</div>
+  )}
+
+  {it.decorSnapshot && (
+    <div className="mt-2 text-xs text-zinc-400">
+      Dekor: {it.decorSnapshot}
+    </div>
+  )}
+
+  {it.feltSnapshot && (
+   <div className="text-xs text-zinc-300">
+  Varianta: {it.feltSnapshot === "felt" ? "S filcem" : "Bez filcu"}
+</div>
+  )}
+</div>
 
                   <div className="flex items-center gap-3 text-sm">
                     <span className="rounded-full border border-zinc-800 bg-zinc-950/40 px-2.5 py-1 text-xs font-semibold text-zinc-200">

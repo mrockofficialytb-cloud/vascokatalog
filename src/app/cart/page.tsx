@@ -35,18 +35,21 @@ export default async function CartPage() {
     },
   });
 
-  const items = (cart?.items ?? []).map((it) => {
-    const price = status === "ACTIVE" ? (it.product.prices?.[0]?.amountCzk ?? null) : null;
-    const subtotal = price ? price * it.quantity : null;
-    return {
-      productId: it.productId,
-      name: it.product.name,
-      sku: it.product.sku,
-      quantity: it.quantity,
-      unitPriceCzk: price,
-      subtotalCzk: subtotal,
-    };
-  });
+ const items = (cart?.items ?? []).map((it) => {
+  const price = status === "ACTIVE" ? (it.product.prices?.[0]?.amountCzk ?? null) : null;
+  const subtotal = price ? price * it.quantity : null;
+
+  return {
+    productId: it.productId,
+    name: it.product.name,
+    sku: it.product.sku,
+    quantity: it.quantity,
+    decor: (it as any).decor ?? null,
+    felt: (it as any).felt ?? null,
+    unitPriceCzk: price,
+    subtotalCzk: subtotal,
+  };
+});
 
   const totalCzk = items.reduce((sum, i) => sum + (i.subtotalCzk ?? 0), 0);
   const hasPrices = status === "ACTIVE";

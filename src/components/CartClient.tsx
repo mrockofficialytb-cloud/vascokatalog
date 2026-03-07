@@ -9,6 +9,10 @@ type Item = {
   name: string;
   sku: string | null;
   quantity: number;
+
+  decor?: string | null;
+  felt?: string | null;
+
   unitPriceCzk: number | null;
   subtotalCzk: number | null;
 };
@@ -86,23 +90,40 @@ export function CartClient({
           <div className="mt-4 grid gap-3">
             {items.map((it) => (
               <div
-                key={it.productId}
+                key={it.productId + "-" + (it.decor ?? "") + "-" + (it.felt ?? "")}
                 className="flex flex-col gap-3 rounded-2xl border border-zinc-900 bg-zinc-950/30 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <div className="font-semibold">{it.name}</div>
-                  <div className="mt-1 text-xs text-zinc-500">{it.sku ?? ""}</div>
+  <div className="font-semibold">{it.name}</div>
 
-                  {hasPrices ? (
-                    <div className="mt-2 text-sm text-zinc-300">
-                      {formatCzk(it.unitPriceCzk!)} / ks
-                      <span className="text-zinc-600"> · </span>
-                      <span className="font-semibold">{formatCzk(it.subtotalCzk!)}</span>
-                    </div>
-                  ) : (
-                    <div className="mt-2 text-sm text-zinc-500">Ceny se zobrazí po schválení účtu</div>
-                  )}
-                </div>
+  {it.sku && (
+    <div className="mt-1 text-xs text-zinc-500">{it.sku}</div>
+  )}
+
+  {it.decor && (
+    <div className="mt-2 text-xs text-zinc-400">
+      Dekor: {it.decor}
+    </div>
+  )}
+
+  {it.felt && (
+    <div className="text-xs text-zinc-400">
+      Varianta: {it.felt}
+    </div>
+  )}
+
+  {hasPrices ? (
+    <div className="mt-2 text-sm text-zinc-300">
+      {formatCzk(it.unitPriceCzk!)} / ks
+      <span className="text-zinc-600"> · </span>
+      <span className="font-semibold">{formatCzk(it.subtotalCzk!)}</span>
+    </div>
+  ) : (
+    <div className="mt-2 text-sm text-zinc-500">
+      Ceny se zobrazí po schválení účtu
+    </div>
+  )}
+</div>
 
                 <div className="flex items-center gap-2">
                   <div className="inline-flex items-center rounded-xl border border-zinc-800 bg-zinc-950/40">

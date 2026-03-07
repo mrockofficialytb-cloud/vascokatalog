@@ -174,13 +174,16 @@ model CartItem {
   productId String
   quantity  Int      @default(1)
 
+    decor     String?
+  felt      String?
+  
   cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([cartId, productId])
+  @@unique([cartId, productId, decor, felt])
 }
 
 model Inquiry {
@@ -207,6 +210,9 @@ model InquiryItem {
   skuSnapshot          String?
   nameSnapshot         String
   quantity             Int
+
+  decorSnapshot        String?
+  feltSnapshot         String?
 
   unitPriceCzkSnapshot Int?
   currencySnapshot     String   @default("CZK")

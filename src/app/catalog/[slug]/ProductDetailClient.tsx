@@ -244,13 +244,12 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                     const res = await fetch("/api/cart/add", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        productId: product.id,
-                        qty: safeQty,
-                        decorId: decor,          // ✅ ukládej ID (stabilní)
-                        decorLabel: decorLabel,  // ✅ můžeš logovat/zobrazovat
-                        felt: withFelt === "WITH" ? "S_FILCEM" : "BEZ_FILCU",
-                      }),
+                     body: JSON.stringify({
+  productId: product.id,
+  qty: safeQty,
+  decor: decorLabel,
+  felt: withFelt === "WITH" ? "S filcem" : "Bez filcu",
+}),
                     });
 
                     if (!res.ok) {

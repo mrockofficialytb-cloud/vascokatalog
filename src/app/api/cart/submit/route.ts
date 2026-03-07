@@ -44,16 +44,20 @@ export async function POST(req: Request) {
         customerTypeSnapshot: customerType,
         statusSnapshot: status,
         items: {
-          create: cart.items.map((it) => ({
-            productId: it.productId,
-            skuSnapshot: it.product.sku,
-            nameSnapshot: it.product.name,
-            quantity: it.quantity,
-            unitPriceCzkSnapshot:
-              status === "ACTIVE" ? (it.product.prices?.[0]?.amountCzk ?? null) : null,
-            currencySnapshot: "CZK",
-          })),
-        },
+  create: cart.items.map((it) => ({
+    productId: it.productId,
+    skuSnapshot: it.product.sku,
+    nameSnapshot: it.product.name,
+    quantity: it.quantity,
+
+    decorSnapshot: (it as any).decor ?? null,
+    feltSnapshot: (it as any).felt ?? null,
+
+    unitPriceCzkSnapshot:
+      status === "ACTIVE" ? (it.product.prices?.[0]?.amountCzk ?? null) : null,
+    currencySnapshot: "CZK",
+  })),
+},
       },
       select: { id: true },
     });
