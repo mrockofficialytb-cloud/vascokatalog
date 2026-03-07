@@ -42,23 +42,32 @@ export function CartClient({
     return formatCzk(sum);
   }, [items, hasPrices]);
 
-  async function setQty(productId: string, quantity: number) {
-    await fetch("/api/cart/set-qty", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId, quantity }),
-    });
-    router.refresh();
-  }
+  async function setQty(
+  productId: string,
+  quantity: number,
+  decor?: string | null,
+  felt?: string | null
+) {
+  await fetch("/api/cart/set-qty", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, quantity, decor, felt }),
+  });
+  router.refresh();
+}
 
-  async function remove(productId: string) {
-    await fetch("/api/cart/remove", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId }),
-    });
-    router.refresh();
-  }
+async function remove(
+  productId: string,
+  decor?: string | null,
+  felt?: string | null
+) {
+  await fetch("/api/cart/remove", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, decor, felt }),
+  });
+  router.refresh();
+}
 
   async function submit() {
     setLoading(true);
@@ -130,7 +139,7 @@ export function CartClient({
                     <button
                       className="h-10 w-10 rounded-l-xl text-zinc-200 hover:bg-zinc-900"
                       type="button"
-                      onClick={() => setQty(it.productId, Math.max(0, it.quantity - 1))}
+                      onClick={() => setQty(it.productId, Math.max(0, it.quantity - 1), it.decor, it.felt)}
                     >
                       –
                     </button>
@@ -138,7 +147,7 @@ export function CartClient({
                     <button
                       className="h-10 w-10 rounded-r-xl text-zinc-200 hover:bg-zinc-900"
                       type="button"
-                      onClick={() => setQty(it.productId, it.quantity + 1)}
+                      onClick={() => setQty(it.productId, it.quantity + 1, it.decor, it.felt)}
                     >
                       +
                     </button>
@@ -147,7 +156,7 @@ export function CartClient({
                   <button
                     className="h-10 rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
                     type="button"
-                    onClick={() => remove(it.productId)}
+                    onClick={() => remove(it.productId, it.decor, it.felt)}
                   >
                     Odebrat
                   </button>
