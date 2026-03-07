@@ -8,9 +8,14 @@ export async function POST(req: Request) {
   const userId = (session as any).userId as string | undefined;
   if (!userId) return new Response("Unauthorized", { status: 401 });
 
-  const body = (await req.json().catch(() => null)) as { productId?: string; quantity?: number } | null;
-  const productId = body?.productId;
-  const quantity = Number(body?.quantity ?? 1);
+  const body = (await req.json().catch(() => null)) as {
+  productId?: string;
+  quantity?: number;
+  qty?: number;
+} | null;
+
+const productId = body?.productId;
+const quantity = Number(body?.quantity ?? body?.qty ?? 1);
 
   if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
     return new Response("Bad Request", { status: 400 });
