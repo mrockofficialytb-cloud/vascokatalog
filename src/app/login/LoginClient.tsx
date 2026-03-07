@@ -12,6 +12,7 @@ export default function LoginClient() {
   const searchParams = useSearchParams();
 
   const verified = searchParams.get("verified") === "1";
+const reset = searchParams.get("reset") === "1";
 
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
@@ -81,10 +82,16 @@ export default function LoginClient() {
           </div>
 
           {verified && (
-            <div className="mb-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-5 py-4 text-sm text-emerald-100">
-              Váš e-mail byl úspěšně ověřen. Pokračujte přihlášením.
-            </div>
-          )}
+  <div className="mb-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-5 py-4 text-sm text-emerald-100">
+    Váš e-mail byl úspěšně ověřen. Pokračujte přihlášením.
+  </div>
+)}
+
+{reset && (
+  <div className="mb-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-5 py-4 text-sm text-emerald-100">
+    Heslo bylo úspěšně změněno. Přihlaste se novým heslem.
+  </div>
+)}
 
           <Card>
             <form onSubmit={onSubmit} className="grid gap-3">
@@ -112,16 +119,11 @@ export default function LoginClient() {
                   Zapomněli jste heslo?
                 </Link>
 
-                <Link
-                  href="/register"
-                  className="text-sm font-semibold text-zinc-300 underline hover:text-white"
-                >
-                  Registrace
-                </Link>
+               
               </div>
 
               <Button type="submit" disabled={loading}>
-                {loading ? "Přihlašuji…" : "Přihlásit"}
+                {loading ? "Přihlašuji…" : "Přihlásit se"}
               </Button>
 
               {msg && (

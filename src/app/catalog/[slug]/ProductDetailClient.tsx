@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -20,11 +21,10 @@ type Props = {
 };
 
 export default function ProductDetailClient({ product, canOrder }: Props) {
+  const router = useRouter();
+
   const [activeImage, setActiveImage] = useState(0);
-
-  // default dekor = první v seznamu (když není, tak prázdný)
   const [decor, setDecor] = useState(product.decors?.[0]?.id ?? "");
-
   const [withFelt, setWithFelt] = useState<"WITH" | "WITHOUT">("WITHOUT");
   const [qty, setQty] = useState(1);
 
@@ -37,7 +37,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
 
   const safeQty = Math.max(1, Math.min(999, qty));
 
-  // swatche bereme primárně z decors (jsou kolekčně správné)
   const swatches = useMemo(() => {
     return (product.decors ?? []).slice(0, 8);
   }, [product.decors]);
@@ -69,7 +68,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
               priority
             />
 
-            {/* left/right controls */}
             {gallery.length > 1 && (
               <>
                 <button
@@ -91,7 +89,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
               </>
             )}
 
-            {/* collection badge */}
             <div className="absolute left-4 top-4">
               <span className="rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-100 backdrop-blur">
                 {(product.collection || "COLLECTION").toUpperCase()}
@@ -99,7 +96,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             </div>
           </div>
 
-          {/* decor thumbs (vzory) */}
           <div className="border-t border-zinc-900 bg-zinc-950/30 p-4">
             <div className="mb-2 text-xs font-semibold text-zinc-400">Vzory dekoru</div>
 
@@ -141,16 +137,17 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             <div className="mt-1 text-3xl font-semibold tracking-tight">{product.priceLabel}</div>
           </div>
 
-          {/* variants */}
           <div className="mt-8 grid gap-5">
-            {/* decor dropdown */}
             <div>
               <div className="mb-2 text-xs font-semibold text-zinc-400">Vyberte dekor:</div>
 
-              <details ref={decorDetailsRef} className="group rounded-2xl border border-zinc-800 bg-zinc-950/40">
-                <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-zinc-100 flex items-center justify-between">
+              <details
+                ref={decorDetailsRef}
+                className="group rounded-2xl border border-zinc-800 bg-zinc-950/40"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-zinc-100">
                   <span>{decorLabel}</span>
-                  <span className="text-zinc-500 group-open:rotate-180 transition">▾</span>
+                  <span className="text-zinc-500 transition group-open:rotate-180">▾</span>
                 </summary>
 
                 <div className="border-t border-zinc-800 p-2">
@@ -158,7 +155,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                     <button
                       key={d.id}
                       type="button"
-                      onClick={() => selectDecor(d.id)} // ✅ vybere + zavře dropdown
+                      onClick={() => selectDecor(d.id)}
                       className={[
                         "w-full rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-zinc-900",
                         decor === d.id ? "bg-white text-zinc-950 hover:bg-zinc-200" : "text-zinc-200",
@@ -171,7 +168,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
               </details>
             </div>
 
-            {/* felt toggle */}
             <div>
               <div className="mb-2 text-xs font-semibold text-zinc-400">Vyberte variantu:</div>
               <div className="flex gap-2">
@@ -203,7 +199,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
               </div>
             </div>
 
-            {/* qty */}
             <div>
               <div className="mb-2 text-xs font-semibold text-zinc-400">Počet kusů</div>
               <div className="flex items-center gap-2">
@@ -219,7 +214,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                   value={safeQty}
                   onChange={(e) => setQty(Number(e.target.value || 1))}
                   inputMode="numeric"
-                  className="h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-sm font-semibold text-zinc-100 outline-none focus:border-zinc-700 text-center"
+                  className="h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-center text-sm font-semibold text-zinc-100 outline-none focus:border-zinc-700"
                 />
 
                 <button
@@ -233,7 +228,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             </div>
           </div>
 
-          {/* CTA */}
           <div className="mt-8">
             {canOrder ? (
               <button
@@ -244,12 +238,12 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                     const res = await fetch("/api/cart/add", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                     body: JSON.stringify({
-  productId: product.id,
-  qty: safeQty,
-  decor: decorLabel,
-  felt: withFelt === "WITH" ? "S filcem" : "Bez filcu",
-}),
+                      body: JSON.stringify({
+                        productId: product.id,
+                        qty: safeQty,
+                        decor: decorLabel,
+                        felt: withFelt === "WITH" ? "S filcem" : "Bez filcu",
+                      }),
                     });
 
                     if (!res.ok) {
@@ -258,6 +252,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                       return;
                     }
 
+                    router.refresh();
                     alert("Produkt přidán do poptávky");
                   } catch {
                     alert("Chyba komunikace se serverem");
