@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdminEmail } from "@/lib/admin";
 import AdminInquiriesSmartRefresh from "@/components/AdminInquiriesSmartRefresh";
-
+import InquiryCancelButton from "@/components/InquiryCancelButton";
 
 function customerTypeCz(t: string) {
   if (t === "B2B_BIG") return "Velkoodběratel";
@@ -177,7 +177,7 @@ const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
 
       <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-6">
-          <div className="text-2xl font-semibold tracking-tight">Administrace objednávek</div>
+          <div className="text-2xl font-semibold tracking-tight">ADMINISTRACE OBJEDNÁVEK</div>
           <div className="mt-1 text-sm text-zinc-400">Přehled poptávek (RFQ)</div>
         </div>
 
@@ -270,13 +270,11 @@ const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
                             </button>
                           </form>
 
-                          <form action="/api/admin/inquiries/set-status" method="post">
-                            <input type="hidden" name="inquiryId" value={inq.id} />
-                            <input type="hidden" name="status" value="CANCELED" />
-                            <button className="h-10 rounded-2xl border border-red-400/30 bg-red-400/10 px-5 text-xs font-semibold text-red-100 hover:bg-red-400/15">
-                              ODMÍTNOUT
-                            </button>
-                          </form>
+                         <form action="/api/admin/inquiries/set-status" method="post">
+  <input type="hidden" name="inquiryId" value={inq.id} />
+  <input type="hidden" name="status" value="CANCELED" />
+  <InquiryCancelButton />
+</form>
                         </div>
                       </div>
                     </div>

@@ -38,6 +38,12 @@ export default function RegisterClient() {
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
 
+  const [sameInvoiceAddress, setSameInvoiceAddress] = useState(true);
+  const [invoiceStreet, setInvoiceStreet] = useState("");
+  const [invoiceHouseNumber, setInvoiceHouseNumber] = useState("");
+  const [invoiceCity, setInvoiceCity] = useState("");
+  const [invoiceZip, setInvoiceZip] = useState("");
+
   const [demandLevel, setDemandLevel] = useState<Demand>("SMALL");
   const [consent, setConsent] = useState(false);
 
@@ -65,6 +71,17 @@ export default function RegisterClient() {
       if (!ico.trim()) return false;
     }
 
+    if (!sameInvoiceAddress) {
+      if (
+        !invoiceStreet.trim() ||
+        !invoiceHouseNumber.trim() ||
+        !invoiceCity.trim() ||
+        !invoiceZip.trim()
+      ) {
+        return false;
+      }
+    }
+
     if (!consent) return false;
     return true;
   }, [
@@ -81,6 +98,11 @@ export default function RegisterClient() {
     companyName,
     ico,
     consent,
+    sameInvoiceAddress,
+    invoiceStreet,
+    invoiceHouseNumber,
+    invoiceCity,
+    invoiceZip,
   ]);
 
   function normalizeEmail(v: string) {
@@ -120,6 +142,11 @@ export default function RegisterClient() {
           houseNumber,
           city,
           zip,
+
+          invoiceStreet: sameInvoiceAddress ? street : invoiceStreet,
+          invoiceHouseNumber: sameInvoiceAddress ? houseNumber : invoiceHouseNumber,
+          invoiceCity: sameInvoiceAddress ? city : invoiceCity,
+          invoiceZip: sameInvoiceAddress ? zip : invoiceZip,
 
           demandLevel,
           consent,
@@ -255,7 +282,8 @@ export default function RegisterClient() {
               <div className="text-lg font-semibold">Potvrzení e-mailu</div>
               <div className="mt-2 text-sm text-zinc-400">
                 Na e-mail{" "}
-                <span className="font-semibold text-zinc-200">{normalizeEmail(email)}</span> jsme poslali ověřovací kód.
+                <span className="font-semibold text-zinc-200">{normalizeEmail(email)}</span> jsme
+                poslali ověřovací kód.
               </div>
 
               <div className="mt-5">
@@ -309,7 +337,7 @@ export default function RegisterClient() {
 
               <div className="mt-4 grid gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">E-mailová adresa:</label>
+                  <label className="text-sm font-semibold text-zinc-300">E-mailová adresa</label>
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -319,7 +347,7 @@ export default function RegisterClient() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">Heslo:</label>
+                  <label className="text-sm font-semibold text-zinc-300">Heslo</label>
                   <input
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -338,12 +366,22 @@ export default function RegisterClient() {
                 <div className="text-sm font-semibold text-zinc-300">Nakupuji jako:</div>
                 <div className="mt-2 flex flex-wrap gap-3">
                   <label className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-sm font-semibold text-zinc-200">
-                    <input type="radio" name="buyer" checked={!isCompany} onChange={() => setIsCompany(false)} />
+                    <input
+                      type="radio"
+                      name="buyer"
+                      checked={!isCompany}
+                      onChange={() => setIsCompany(false)}
+                    />
                     Soukromá osoba
                   </label>
 
                   <label className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-sm font-semibold text-zinc-200">
-                    <input type="radio" name="buyer" checked={isCompany} onChange={() => setIsCompany(true)} />
+                    <input
+                      type="radio"
+                      name="buyer"
+                      checked={isCompany}
+                      onChange={() => setIsCompany(true)}
+                    />
                     Firma / živnostník
                   </label>
                 </div>
@@ -351,7 +389,7 @@ export default function RegisterClient() {
 
               {isCompany && (
                 <div className="mt-4">
-                  <label className="text-sm font-semibold text-zinc-300">Název firmy:</label>
+                  <label className="text-sm font-semibold text-zinc-300">Název firmy</label>
                   <input
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
@@ -387,16 +425,16 @@ export default function RegisterClient() {
                     className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
                   />
                 </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-zinc-300">Emailová adresa</label>
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    type="email"
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-                  />
-                </div>
+				
+				<div>
+  <label className="text-sm font-semibold text-zinc-300">Emailová adresa</label>
+  <input
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    type="email"
+    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+  />
+</div>
 
                 {isCompany && (
                   <>
@@ -423,7 +461,7 @@ export default function RegisterClient() {
             </section>
 
             <section className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
-              <div className="text-lg font-semibold">Adresa</div>
+              <div className="text-lg font-semibold">Kontaktní adresa</div>
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
@@ -462,6 +500,59 @@ export default function RegisterClient() {
                   />
                 </div>
               </div>
+
+              <label className="mt-5 flex items-center gap-3 text-sm font-semibold text-zinc-300">
+                <input
+                  type="checkbox"
+                  checked={sameInvoiceAddress}
+                  onChange={(e) => setSameInvoiceAddress(e.target.checked)}
+                />
+                Fakturační adresa je stejná jako kontaktní
+              </label>
+
+              {!sameInvoiceAddress && (
+                <div className="mt-6">
+                  <div className="text-lg font-semibold">Fakturační adresa</div>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="text-sm font-semibold text-zinc-300">Ulice</label>
+                      <input
+                        value={invoiceStreet}
+                        onChange={(e) => setInvoiceStreet(e.target.value)}
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-zinc-300">Číslo popisné</label>
+                      <input
+                        value={invoiceHouseNumber}
+                        onChange={(e) => setInvoiceHouseNumber(e.target.value)}
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-zinc-300">Město</label>
+                      <input
+                        value={invoiceCity}
+                        onChange={(e) => setInvoiceCity(e.target.value)}
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-semibold text-zinc-300">PSČ</label>
+                      <input
+                        value={invoiceZip}
+                        onChange={(e) => setInvoiceZip(e.target.value)}
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
 
             <section className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
@@ -521,7 +612,8 @@ export default function RegisterClient() {
                   className="mt-1"
                 />
                 <span className="text-sm text-zinc-200">
-                  Potvrzuji, že údaje jsou pravdivé a souhlasím se zpracováním pro účely vyřízení poptávky.
+                  Potvrzuji, že údaje jsou pravdivé a souhlasím se zpracováním pro účely
+                  vyřízení poptávky.
                 </span>
               </label>
 
@@ -533,7 +625,8 @@ export default function RegisterClient() {
               </button>
 
               <div className="mt-3 text-xs text-zinc-500">
-                Střední a Velký odběr se po registraci zařadí do schválení administrátorem. Po vytvoření účtu bude potřeba potvrdit e-mail kódem.
+                Střední a Velký odběr se po registraci zařadí do schválení administrátorem. Po
+                vytvoření účtu bude potřeba potvrdit e-mail kódem.
               </div>
             </section>
           </form>

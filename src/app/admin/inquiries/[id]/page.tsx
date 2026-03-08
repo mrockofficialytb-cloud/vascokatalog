@@ -10,6 +10,79 @@ function formatCzk(amountCzk: number) {
   return new Intl.NumberFormat("cs-CZ", { style: "currency", currency: "CZK" }).format(val);
 }
 
+function statusLabel(status: string) {
+  if (status === "NEW") return "Nová poptávka";
+  if (status === "IN_PROGRESS") return "Ve zpracování";
+  if (status === "DONE") return "Dokončeno";
+  if (status === "CANCELED") return "Storno";
+  return status;
+}
+
+function Step({
+  label,
+  active = false,
+  done = false,
+  danger = false,
+}: {
+  label: string;
+  active?: boolean;
+  done?: boolean;
+  danger?: boolean;
+}) {
+  const dotClass = danger
+    ? "bg-red-400"
+    : active || done
+    ? "bg-emerald-400"
+    : "bg-zinc-600";
+
+  const textClass = danger
+    ? "text-red-300"
+    : active
+    ? "text-zinc-100"
+    : done
+    ? "text-emerald-300"
+    : "text-zinc-500";
+
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotClass}`} />
+      <span className={`text-xs font-semibold ${textClass}`}>{label}</span>
+    </div>
+  );
+}
+
+function Timeline({ status }: { status: string }) {
+  const isNew = status === "NEW" || status === "IN_PROGRESS" || status === "DONE";
+  const isProgress = status === "IN_PROGRESS" || status === "DONE";
+  const isDone = status === "DONE";
+  const isCanceled = status === "CANCELED";
+
+  return (
+    <div className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-5">
+      <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        Stav objednávky
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+        <Step label="Nová poptávka" active={status === "NEW"} done={isNew && status !== "NEW"} />
+        <div className={`hidden h-px w-8 sm:block ${isProgress || isDone ? "bg-emerald-400/60" : "bg-zinc-800"}`} />
+
+        <Step
+          label="Ve zpracování"
+          active={status === "IN_PROGRESS"}
+          done={status === "DONE"}
+        />
+        <div className={`hidden h-px w-8 sm:block ${isDone ? "bg-emerald-400/60" : "bg-zinc-800"}`} />
+
+        <Step label="Dokončeno" active={status === "DONE"} />
+
+        <div className="hidden h-px w-8 bg-zinc-800 sm:block" />
+        <Step label="Storno" active={isCanceled} danger={isCanceled} />
+      </div>
+    </div>
+  );
+}
+
 export default async function AdminInquiryDetailPage({
   params,
 }: {
@@ -23,27 +96,27 @@ export default async function AdminInquiryDetailPage({
   const id = (rawId ?? "").toString().trim();
   if (!id) notFound();
 
- const inquiry = await prisma.inquiry.findUnique({
-  where: { id },
-  select: {
-    id: true,
-    orderNumber: true,
-    createdAt: true,
-    status: true,
-    note: true,
-    customerTypeSnapshot: true,
-    statusSnapshot: true,
-    user: {
-      select: {
-        email: true,
-        name: true,
+  const inquiry = await prisma.inquiry.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      orderNumber: true,
+      createdAt: true,
+      status: true,
+      note: true,
+      customerTypeSnapshot: true,
+      statusSnapshot: true,
+      user: {
+        select: {
+          email: true,
+          name: true,
+        },
+      },
+      items: {
+        orderBy: { id: "asc" },
       },
     },
-    items: {
-      orderBy: { id: "asc" },
-    },
-  },
-});
+  });
 
   if (!inquiry) notFound();
 
@@ -58,11 +131,12 @@ export default async function AdminInquiryDetailPage({
       <header className="border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div>
-            <div className="text-xl font-semibold tracking-tight">Detail poptávky</div>
-           <div className="text-sm text-zinc-400">
-  VASCO-{String(inquiry.orderNumber).padStart(4, "0")}
-</div>
+            <div className="text-xl font-semibold tracking-tight">DETAIL POPTÁVKY</div>
+            <div className="text-sm text-zinc-400">
+              VASCO-{String(inquiry.orderNumber).padStart(4, "0")}
+            </div>
           </div>
+
           <Link
             href="/admin/inquiries"
             className="rounded-xl border border-zinc-800 bg-zinc-950/40 px-4 py-2 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
@@ -72,9 +146,11 @@ export default async function AdminInquiryDetailPage({
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-4 py-10 grid gap-6">
+      <div className="mx-auto grid max-w-5xl gap-6 px-4 py-10">
+        <Timeline status={inquiry.status} />
+
         <div className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-base font-semibold">
                 {inquiry.user.email}
@@ -83,7 +159,7 @@ export default async function AdminInquiryDetailPage({
               <div className="mt-1 text-xs text-zinc-500">
                 {new Date(inquiry.createdAt).toLocaleString("cs-CZ")} ·{" "}
                 {inquiry.customerTypeSnapshot}/{inquiry.statusSnapshot}
-              </div>
+              </div>    
             </div>
 
             <form
@@ -91,7 +167,7 @@ export default async function AdminInquiryDetailPage({
               method="post"
               className="flex items-center gap-2"
             >
-             <input type="hidden" name="inquiryId" value={inquiry.id} />
+              <input type="hidden" name="inquiryId" value={inquiry.id} />
               <select
                 name="status"
                 defaultValue={inquiry.status}
@@ -120,27 +196,30 @@ export default async function AdminInquiryDetailPage({
 
           <div className="mt-4 grid gap-3">
             {inquiry.items.map((it) => (
-              <div key={it.id} className="rounded-2xl border border-zinc-900 bg-zinc-950/30 p-4">
+              <div
+                key={it.id}
+                className="rounded-2xl border border-zinc-900 bg-zinc-950/30 p-4"
+              >
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-  <div className="font-semibold">{it.nameSnapshot}</div>
+                    <div className="font-semibold">{it.nameSnapshot}</div>
 
-  {it.skuSnapshot && (
-    <div className="mt-1 text-xs text-zinc-500">{it.skuSnapshot}</div>
-  )}
+                    {it.skuSnapshot && (
+                      <div className="mt-1 text-xs text-zinc-500">{it.skuSnapshot}</div>
+                    )}
 
-  {it.decorSnapshot && (
-    <div className="mt-2 text-xs text-zinc-400">
-      Dekor: {it.decorSnapshot}
-    </div>
-  )}
+                    {it.decorSnapshot && (
+                      <div className="mt-2 text-xs text-zinc-400">
+                        Dekor: {it.decorSnapshot}
+                      </div>
+                    )}
 
-  {it.feltSnapshot && (
-   <div className="text-xs text-zinc-300">
-  Varianta: {it.feltSnapshot === "felt" ? "S filcem" : "Bez filcu"}
-</div>
-  )}
-</div>
+                    {it.feltSnapshot && (
+                      <div className="text-xs text-zinc-300">
+                        Varianta: {it.feltSnapshot === "felt" ? "S filcem" : "Bez filcu"}
+                      </div>
+                    )}
+                  </div>
 
                   <div className="flex items-center gap-3 text-sm">
                     <span className="rounded-full border border-zinc-800 bg-zinc-950/40 px-2.5 py-1 text-xs font-semibold text-zinc-200">
@@ -164,14 +243,40 @@ export default async function AdminInquiryDetailPage({
             ))}
           </div>
 
-          {hasPrices && (
-            <div className="mt-5 flex items-center justify-end text-sm text-zinc-300">
-              Celkem:{" "}
-              <span className="ml-2 text-base font-semibold text-zinc-100">
-                {formatCzk(totalCzk)}
-              </span>
-            </div>
-          )}
+          <div className="mt-6 flex items-end justify-between gap-4">
+            <a
+  href={`/api/inquiries/${inquiry.id}/pdf`}
+  target="_blank"
+  className="flex items-center gap-2 text-sm font-semibold text-zinc-400 hover:text-white transition"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="opacity-70"
+  >
+    <path d="M12 3v12" />
+    <path d="M7 10l5 5 5-5" />
+    <path d="M5 21h14" />
+  </svg>
+  Stáhnout PDF
+</a>
+
+            {hasPrices && (
+              <div className="text-sm text-zinc-300">
+                Celkem:{" "}
+                <span className="ml-2 text-base font-semibold text-zinc-100">
+                  {formatCzk(totalCzk)}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </main>

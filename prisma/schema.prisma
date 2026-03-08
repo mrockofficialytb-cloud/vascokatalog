@@ -8,92 +8,52 @@ datasource db {
   directUrl = env("DIRECT_DATABASE_URL")
 }
 
-enum CustomerType {
-  B2C
-  B2B_SMALL
-  B2B_BIG
-}
-
-enum AccountStatus {
-  // NOVĚ: účet vytvořen, ale e-mail ještě nebyl ověřen kódem
-  PENDING_EMAIL
-
-  // už máš:
-  ACTIVE
-  PENDING
-  DISABLED
-}
-
-enum BuyerType {
-  PERSON
-  COMPANY
-}
-
-enum VolumeTier {
-  SMALL
-  MEDIUM
-  LARGE
-}
-
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  passwordHash String?
-  name         String?
-  customerType CustomerType  @default(B2C)
-
-  // ✅ změna: default dáme PENDING_EMAIL (anti-spam)
-  status       AccountStatus @default(PENDING_EMAIL)
-
-  // Kontakty
-  firstName    String?
-  lastName     String?
-  phone        String?
-
-  // Adresa
-  street       String?
-  houseNumber  String?
-  city         String?
-  zip          String?
-
-  // Segmentace
-  buyerType    BuyerType     @default(PERSON)
-  volume       VolumeTier    @default(SMALL)
-
-  // Firma
-  companyName  String?
-  ico          String?
-  dic          String?
-
-  // ✅ NOVĚ: e-mail ověřovací kód (1 aktivní kód na uživatele)
+  id                String                 @id @default(cuid())
+  email             String                 @unique
+  passwordHash      String?
+  name              String?
+  customerType      CustomerType           @default(B2C)
+  status            AccountStatus          @default(PENDING_EMAIL)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  buyerType         BuyerType              @default(PERSON)
+  city              String?
+  companyName       String?
+  ico               String?
+  phone             String?
+  volume            VolumeTier             @default(SMALL)
+  dic               String?
+  firstName         String?
+  houseNumber       String?
+  lastName          String?
+  street            String?
+  zip               String?
+  accounts          Account[]
+  cart              Cart?
   emailVerification EmailVerificationCode?
-
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-
-  accounts     Account[]
-  sessions     Session[]
-  cart         Cart?
-  inquiries    Inquiry[]
+  inquiries         Inquiry[]
+  sessions          Session[]
+  invoiceStreet       String?
+  invoiceHouseNumber  String?
+  invoiceCity         String?
+  invoiceZip          String?
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  sku         String?  @unique
-  slug        String   @unique
-  name        String
-  description String?
-  isActive    Boolean  @default(true)
-
-  prices      Price[]
-  imageUrl    String?
-  collection  ProductCollection?
-
+  id           String             @id @default(cuid())
+  sku          String?            @unique
+  name         String
+  description  String?
+  isActive     Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  imageUrl     String?
+  collection   ProductCollection?
+  slug         String             @unique
   cartItems    CartItem[]
   inquiryItems InquiryItem[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  prices       Price[]
 }
 
 model Price {
@@ -102,7 +62,6 @@ model Price {
   customerType CustomerType
   amountCzk    Int
   currency     String       @default("CZK")
-
   product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, customerType])
@@ -121,8 +80,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -132,8 +90,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -142,6 +99,110 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  decor     String?
+  felt      String?
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId, decor, felt])
+}
+
+model Inquiry {
+  id                   String        @id @default(cuid())
+  userId               String
+  status               InquiryStatus @default(NEW)
+  note                 String?
+  customerTypeSnapshot CustomerType
+  statusSnapshot       AccountStatus
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  orderNumber          Int           @unique
+  user                 User          @relation(fields: [userId], references: [id])
+  items                InquiryItem[]
+}
+
+model InquiryItem {
+  id                   String  @id @default(cuid())
+  inquiryId            String
+  productId            String
+  skuSnapshot          String?
+  nameSnapshot         String
+  quantity             Int
+  unitPriceCzkSnapshot Int?
+  currencySnapshot     String  @default("CZK")
+  decorSnapshot        String?
+  feltSnapshot         String?
+  inquiry              Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  product              Product @relation(fields: [productId], references: [id])
+}
+
+model EmailVerificationCode {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int      @default(0)
+  lastSentAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+enum CustomerType {
+  B2C
+  B2B_SMALL
+  B2B_BIG
+}
+
+enum AccountStatus {
+  ACTIVE
+  PENDING
+  DISABLED
+  PENDING_EMAIL
+}
+
+enum BuyerType {
+  PERSON
+  COMPANY
+}
+
+enum VolumeTier {
+  SMALL
+  MEDIUM
+  LARGE
 }
 
 enum InquiryStatus {
@@ -157,104 +218,4 @@ enum ProductCollection {
   SPAZIO
   MODULLO
   RIFFCELLO
-}
-
-model Cart {
-  id        String     @id @default(cuid())
-  userId    String     @unique
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     CartItem[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-}
-
-model CartItem {
-  id        String   @id @default(cuid())
-  cartId    String
-  productId String
-  quantity  Int      @default(1)
-
-    decor     String?
-  felt      String?
-  
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([cartId, productId, decor, felt])
-}
-
-model Inquiry {
-  id                   String        @id @default(cuid())
-  orderNumber          Int           @unique
-
-  userId               String
-  user                 User          @relation(fields: [userId], references: [id], onDelete: Restrict)
-
-  status               InquiryStatus @default(NEW)
-  note                 String?
-  customerTypeSnapshot CustomerType
-  statusSnapshot       AccountStatus
-
-  items                InquiryItem[]
-
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-}
-
-model InquiryItem {
-  id                   String   @id @default(cuid())
-  inquiryId            String
-  productId            String
-
-  skuSnapshot          String?
-  nameSnapshot         String
-  quantity             Int
-
-  decorSnapshot        String?
-  feltSnapshot         String?
-
-  unitPriceCzkSnapshot Int?
-  currencySnapshot     String   @default("CZK")
-
-  inquiry              Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
-  product              Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-}
-
-//
-// ✅ NOVÝ MODEL: Ověření e-mailu kódem (anti-spam)
-// - držíme HASH kódu (ne samotný kód)
-// - expires = platnost (např. 15 min)
-// - attempts = počítadlo pokusů
-//
-model EmailVerificationCode {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  codeHash    String
-  expiresAt   DateTime
-  attempts    Int      @default(0)
-  lastSentAt  DateTime @default(now())
-
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([expiresAt])
-}
-
-model PasswordResetToken {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-  @@index([expiresAt])
 }

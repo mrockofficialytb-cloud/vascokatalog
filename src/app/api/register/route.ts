@@ -144,6 +144,11 @@ export async function POST(req: Request) {
     const city = (body.city ?? "").toString().trim();
     const zip = (body.zip ?? "").toString().trim();
 
+	const invoiceStreet = (body.invoiceStreet ?? "").toString().trim();
+	const invoiceHouseNumber = (body.invoiceHouseNumber ?? "").toString().trim();
+	const invoiceCity = (body.invoiceCity ?? "").toString().trim();
+	const invoiceZip = (body.invoiceZip ?? "").toString().trim();
+
     const demandLevel =
       (((body.demandLevel ?? "SMALL").toString().trim().toUpperCase() as Demand) || "SMALL");
 
@@ -199,34 +204,39 @@ export async function POST(req: Request) {
     const volume = mapDemandToVolume(demandLevel);
 
     const user = await prisma.user.create({
-      data: {
-        email,
-        passwordHash,
+  data: {
+    email,
+    passwordHash,
 
-        firstName,
-        lastName,
-        name: `${firstName} ${lastName}`.trim(),
-        phone,
+    firstName,
+    lastName,
+    name: `${firstName} ${lastName}`.trim(),
+    phone,
 
-        buyerType: buyerType as any,
-        volume: volume as any,
+    buyerType: buyerType as any,
+    volume: volume as any,
 
-        companyName: isCompany ? companyName : null,
-        ico: isCompany ? ico : null,
-        dic: isCompany && dic ? dic : null,
+    companyName: isCompany ? companyName : null,
+    ico: isCompany ? ico : null,
+    dic: isCompany && dic ? dic : null,
 
-        street,
-        houseNumber,
-        city,
-        zip,
+    street,
+    houseNumber,
+    city,
+    zip,
 
-        customerType: customerType as any,
+    invoiceStreet: invoiceStreet || null,
+    invoiceHouseNumber: invoiceHouseNumber || null,
+    invoiceCity: invoiceCity || null,
+    invoiceZip: invoiceZip || null,
 
-        // do ověření e-mailu blokace přihlášení
-        status: "DISABLED" as any,
-      },
-      select: { id: true },
-    });
+    customerType: customerType as any,
+
+    // do ověření e-mailu blokace přihlášení
+    status: "DISABLED" as any,
+  },
+  select: { id: true },
+});
 
     await createAndSendVerification(email);
 
