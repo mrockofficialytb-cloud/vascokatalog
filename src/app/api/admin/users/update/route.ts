@@ -54,19 +54,28 @@ export async function POST(req: Request) {
     const houseNumber = s(body.houseNumber);
     const city = s(body.city);
     const zip = s(body.zip);
-
+	const invoiceStreet = s(body.invoiceStreet);
+	const invoiceHouseNumber = s(body.invoiceHouseNumber);
+	const invoiceCity = s(body.invoiceCity);
+	const invoiceZip = s(body.invoiceZip);
+	
     // Sestav data – aktualizuj jen to, co máme v schématu.
     // (Pokud některé pole neexistuje, Prisma hodí chybu – pak mi pošli model User a upravíme to přesně.)
     const data: any = {
-      name,
-      phone: phone || null,
-      companyName: companyName || null,
-      ico: ico || null,
-      dic: dic || null,
-      street: street || null,
-      houseNumber: houseNumber || null,
-      city: city || null,
-      zip: zip || null,
+  name,
+  phone: phone || null,
+  companyName: companyName || null,
+  ico: ico || null,
+  dic: dic || null,
+  street: street || null,
+  houseNumber: houseNumber || null,
+  city: city || null,
+  zip: zip || null,
+
+  invoiceStreet: invoiceStreet || null,
+  invoiceHouseNumber: invoiceHouseNumber || null,
+  invoiceCity: invoiceCity || null,
+  invoiceZip: invoiceZip || null,
 
       // pokud existují sloupce firstName/lastName, naplníme je taky:
       firstName: nameParts.firstName,

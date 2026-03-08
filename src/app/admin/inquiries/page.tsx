@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdminEmail } from "@/lib/admin";
 import AdminInquiriesSmartRefresh from "@/components/AdminInquiriesSmartRefresh";
-import InquiryCancelButton from "@/components/InquiryCancelButton";
+import DeleteInquiryButton from "@/components/DeleteInquiryButton";
 
 function customerTypeCz(t: string) {
   if (t === "B2B_BIG") return "Velkoodběratel";
@@ -80,26 +80,13 @@ function formatCzk(amountCzk: number | null | undefined) {
   }).format(val);
 }
 
-function formatDate(dt: Date) {
-  return new Date(dt).toLocaleString("cs-CZ");
-}
-
-function displayBuyer(u: {
-  name: string | null;
-  buyerType: "PERSON" | "COMPANY";
-  companyName: string | null;
-}) {
-  const personName = (u.name ?? "").trim();
-
-  if (u.buyerType === "COMPANY") {
-    const firm = (u.companyName ?? "").trim();
-    if (firm && personName) return `${firm} — ${personName}`;
-    if (firm) return firm;
-    if (personName) return `${personName} — firma`;
-    return "Firma";
-  }
-
-  return personName || "Soukromá osoba";
+function totalInquiryCzk(
+  items: Array<{ quantity: number; unitPriceCzkSnapshot: number | null }>
+) {
+  return items.reduce((sum, it) => {
+    const unit = it.unitPriceCzkSnapshot ?? 0;
+    return sum + unit * it.quantity;
+  }, 0);
 }
 
 function FilterLink({
@@ -135,10 +122,10 @@ export default async function AdminInquiriesPage({
   if (!session?.user?.email) redirect("/login");
   if (!isAdminEmail(session.user.email)) redirect("/catalog");
 
- const params = await searchParams;
-const allowedStatuses = ["NEW", "IN_PROGRESS", "DONE", "CANCELED"] as const;
-const filter = params?.status;
-const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
+  const params = await searchParams;
+  const allowedStatuses = ["NEW", "IN_PROGRESS", "DONE", "CANCELED"] as const;
+  const filter = params?.status;
+  const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
 
   const inquiries = await prisma.inquiry.findMany({
     where: activeFilter ? { status: activeFilter as any } : undefined,
@@ -146,7 +133,7 @@ const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
     select: {
       id: true,
       orderNumber: true,
-	  createdAt: true,
+      createdAt: true,
       status: true,
       customerTypeSnapshot: true,
       statusSnapshot: true,
@@ -161,6 +148,7 @@ const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
       items: {
         orderBy: { id: "asc" },
         select: {
+          id: true,
           quantity: true,
           nameSnapshot: true,
           decorSnapshot: true,
@@ -213,145 +201,150 @@ const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
           </div>
         ) : (
           <div className="grid gap-4">
-            {inquiries.map((inq) => {
-              const buyerTitle = displayBuyer(inq.user as any);
-              const rows = inq.items.slice(0, 4);
-              const hasMore = inq.items.length > rows.length;
-
-              const total = inq.items.reduce((sum, it) => {
-                const unit = it.unitPriceCzkSnapshot ?? 0;
-                const qty = it.quantity ?? 0;
-                return sum + unit * qty;
-              }, 0);
-
-              return (
-                <div
-                  key={inq.id}
-                  className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-5 transition hover:border-zinc-800 hover:bg-zinc-900/40"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0">
-                        <div className="truncate text-base font-semibold">
-  {buyerTitle}
-</div>
-
-<div className="mt-1 text-xs text-zinc-500">
-  Objednávka VASCO-{String(inq.orderNumber).padStart(4,"0")}
-</div>
-                        <div className="mt-1 truncate text-xs text-zinc-400">{inq.user.email}</div>
-
-                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
-                          <span>Vytvořeno: {formatDate(inq.createdAt)}</span>
-                          <span className="text-zinc-700">•</span>
-                          <span>Typ: {customerTypeCz(inq.customerTypeSnapshot)}</span>
-                          <span className="text-zinc-700">•</span>
-                          <span>Stav účtu: {statusCz(inq.statusSnapshot)}</span>
-                        </div>
+            {inquiries.map((inq) => (
+              <div
+                key={inq.id}
+                className="relative group rounded-2xl border border-zinc-900 bg-zinc-900/30 p-5 transition hover:border-zinc-800 hover:bg-zinc-900/40"
+              >
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <div className="text-base font-semibold text-white">
+                        {inq.user.name || inq.user.email}
                       </div>
 
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        <InquiryBadge status={inq.status} />
-
-                        <div className="flex flex-wrap justify-end gap-2">
-                          <form action="/api/admin/inquiries/set-status" method="post">
-                            <input type="hidden" name="inquiryId" value={inq.id} />
-                            <input type="hidden" name="status" value="IN_PROGRESS" />
-                            <button className="h-10 rounded-2xl bg-white px-5 text-xs font-semibold text-zinc-950 hover:bg-zinc-200">
-                              PŘIJMOUT
-                            </button>
-                          </form>
-
-                          <form action="/api/admin/inquiries/set-status" method="post">
-                            <input type="hidden" name="inquiryId" value={inq.id} />
-                            <input type="hidden" name="status" value="DONE" />
-                            <button className="h-10 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-5 text-xs font-semibold text-emerald-100 hover:bg-emerald-400/15">
-                              DOKONČIT
-                            </button>
-                          </form>
-
-                         <form action="/api/admin/inquiries/set-status" method="post">
-  <input type="hidden" name="inquiryId" value={inq.id} />
-  <input type="hidden" name="status" value="CANCELED" />
-  <InquiryCancelButton />
-</form>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="overflow-hidden rounded-xl border border-zinc-900">
-                      <div className="grid grid-cols-12 gap-0 bg-zinc-950/40 px-4 py-2 text-[11px] font-semibold text-zinc-300">
-                        <div className="col-span-3">Počet kusů</div>
-                        <div className="col-span-5">Název položky</div>
-                        <div className="col-span-2 text-right">Cena za MJ</div>
-                        <div className="col-span-2 text-right">Cena celkem</div>
+                      <div className="mt-1 text-sm text-zinc-400">
+                        Objednávka VASCO-{String(inq.orderNumber).padStart(4, "0")}
                       </div>
 
-                      <div className="divide-y divide-zinc-900 bg-zinc-900/20">
-                        {rows.map((it, idx) => {
-                          const unit = it.unitPriceCzkSnapshot ?? null;
-                          const lineTotal = unit == null ? null : unit * (it.quantity ?? 0);
+                      <div className="text-sm text-zinc-400">{inq.user.email}</div>
 
-                          return (
-                            <div
-                              key={idx}
-                              className="grid grid-cols-12 items-center px-4 py-2 text-sm"
-                            >
-                              <div className="col-span-3 text-zinc-200">{it.quantity} ks</div>
-
-                              <div className="col-span-5">
-                                <div className="truncate text-zinc-100">{it.nameSnapshot}</div>
-
-                                {it.decorSnapshot && (
-                                  <div className="mt-1 text-xs text-zinc-400">
-                                    Dekor: {it.decorSnapshot}
-                                  </div>
-                                )}
-
-                                {it.feltSnapshot && (
-                                  <div className="text-xs text-zinc-400">
-                                    Varianta: {it.feltSnapshot}
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="col-span-2 text-right text-zinc-200">
-                                {formatCzk(unit)}
-                              </div>
-
-                              <div className="col-span-2 text-right font-semibold text-zinc-100">
-                                {formatCzk(lineTotal)}
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                        <div className="flex items-center justify-between px-4 py-2">
-                          <div className="text-xs text-zinc-500">
-                            {hasMore ? `+ další položky (${inq.items.length - rows.length})` : " "}
-                          </div>
-                          <div className="text-sm font-semibold text-zinc-100">
-                            Celkem: {formatCzk(total)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Link
-                        href={`/admin/inquiries/${inq.id}`}
-                        className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white"
-                      >
-                        Zobrazit detail objednávky
-                        <span aria-hidden className="text-zinc-500">
-                          →
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500">
+                        <span>
+                          Vytvořeno: {new Date(inq.createdAt).toLocaleString("cs-CZ")}
                         </span>
-                      </Link>
+                        <span>Typ: {customerTypeCz(inq.customerTypeSnapshot)}</span>
+                        <span>Stav účtu: {statusCz(inq.statusSnapshot)}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <InquiryBadge status={inq.status} />
+
+                      <form action="/api/admin/inquiries/set-status" method="post">
+                        <input type="hidden" name="inquiryId" value={inq.id} />
+                        <input
+                          type="hidden"
+                          name="redirectTo"
+                          value={`/admin/inquiries`}
+                        />
+                        <input type="hidden" name="status" value="NEW" />
+                        <button className="h-10 rounded-2xl border border-zinc-700 bg-white px-5 text-xs font-semibold text-zinc-950 hover:bg-zinc-200">
+                          PŘIJMOUT
+                        </button>
+                      </form>
+
+                      <form action="/api/admin/inquiries/set-status" method="post">
+                        <input type="hidden" name="inquiryId" value={inq.id} />
+                        <input
+                          type="hidden"
+                          name="redirectTo"
+                          value={`/admin/inquiries`}
+                        />
+                        <input type="hidden" name="status" value="DONE" />
+                        <button className="h-10 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-5 text-xs font-semibold text-emerald-100 hover:bg-emerald-400/15">
+                          DOKONČIT
+                        </button>
+                      </form>
+
+                      <form action="/api/admin/inquiries/set-status" method="post">
+                        <input type="hidden" name="inquiryId" value={inq.id} />
+                        <input
+                          type="hidden"
+                          name="redirectTo"
+                          value={`/admin/inquiries`}
+                        />
+                        <input type="hidden" name="status" value="CANCELED" />
+                        <button className="h-10 rounded-2xl border border-red-400/30 bg-red-400/10 px-5 text-xs font-semibold text-red-100 hover:bg-red-400/15">
+                          ODMÍTNOUT
+                        </button>
+                      </form>
                     </div>
                   </div>
+
+                  <div className="overflow-hidden rounded-2xl border border-zinc-900">
+                    <div className="grid grid-cols-[120px_1fr_140px_140px] bg-zinc-950/40 px-4 py-3 text-xs font-semibold text-zinc-300">
+                      <div>Počet kusů</div>
+                      <div>Název položky</div>
+                      <div className="text-right">Cena za MJ</div>
+                      <div className="text-right">Cena celkem</div>
+                    </div>
+
+                    <div className="divide-y divide-zinc-900">
+                      {inq.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="grid grid-cols-[120px_1fr_140px_140px] items-start px-4 py-4 text-sm"
+                        >
+                          <div className="text-zinc-100">{item.quantity} ks</div>
+
+                          <div>
+                            <div className="font-semibold text-white">{item.nameSnapshot}</div>
+
+                            {item.decorSnapshot && (
+                              <div className="mt-1 text-xs text-zinc-400">
+                                Dekor: {item.decorSnapshot}
+                              </div>
+                            )}
+
+                            {item.feltSnapshot && (
+                              <div className="text-xs text-zinc-400">
+                                Varianta: {item.feltSnapshot}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="text-right text-zinc-200">
+                            {typeof item.unitPriceCzkSnapshot === "number"
+                              ? formatCzk(item.unitPriceCzkSnapshot)
+                              : "—"}
+                          </div>
+
+                          <div className="text-right font-semibold text-white">
+                            {typeof item.unitPriceCzkSnapshot === "number"
+                              ? formatCzk(item.unitPriceCzkSnapshot * item.quantity)
+                              : "—"}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-end border-t border-zinc-900 px-4 py-4">
+                      <div className="text-sm text-zinc-300">
+                        Celkem:{" "}
+                        <span className="font-semibold text-white">
+                          {formatCzk(totalInquiryCzk(inq.items))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-1 flex items-center justify-start">
+                    <Link
+                      href={`/admin/inquiries/${inq.id}`}
+                      className="text-xs font-semibold text-zinc-300 transition hover:text-white"
+                    >
+                      Zobrazit detail objednávky →
+                    </Link>
+                  </div>
                 </div>
-              );
-            })}
+
+                <DeleteInquiryButton
+                  inquiryId={inq.id}
+                  orderLabel={`VASCO-${String(inq.orderNumber).padStart(4, "0")}`}
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>

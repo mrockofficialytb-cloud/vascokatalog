@@ -162,25 +162,92 @@ export default async function AdminInquiryDetailPage({
               </div>    
             </div>
 
-            <form
-              action="/api/admin/inquiries/set-status"
-              method="post"
-              className="flex items-center gap-2"
-            >
-              <input type="hidden" name="inquiryId" value={inquiry.id} />
-              <select
-                name="status"
-                defaultValue={inquiry.status}
-                className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm text-zinc-100"
-              >
-                <option value="NEW">NOVÁ POPTÁVKA</option>
-                <option value="IN_PROGRESS">VE ZPRACOVÁNÍ</option>
-                <option value="DONE">DOKONČIT</option>
-              </select>
-              <button className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
-                Uložit
-              </button>
-            </form>
+          <form
+  action="/api/admin/inquiries/set-status"
+  method="post"
+  className="flex flex-col gap-3 sm:items-end"
+>
+  <input type="hidden" name="inquiryId" value={inquiry.id} />
+  <input type="hidden" name="redirectTo" value={`/admin/inquiries/${inquiry.id}`} />
+
+  <details className="group relative min-w-[240px] rounded-2xl border border-zinc-800 bg-zinc-950/60">
+    <summary className="flex h-11 cursor-pointer list-none items-center justify-between rounded-2xl px-4 text-sm font-semibold text-zinc-100">
+      <span>{statusLabel(inquiry.status).toUpperCase()}</span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-zinc-400 transition group-open:rotate-180"
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </summary>
+
+    <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+      <button
+        type="submit"
+        name="status"
+        value="NEW"
+        className={[
+          "flex h-11 w-full items-center px-4 text-left text-sm font-semibold transition",
+          inquiry.status === "NEW"
+            ? "bg-white text-zinc-950"
+            : "text-zinc-100 hover:bg-zinc-900",
+        ].join(" ")}
+      >
+        Nová poptávka
+      </button>
+
+      <button
+        type="submit"
+        name="status"
+        value="IN_PROGRESS"
+        className={[
+          "flex h-11 w-full items-center px-4 text-left text-sm font-semibold transition",
+          inquiry.status === "IN_PROGRESS"
+            ? "bg-white text-zinc-950"
+            : "text-zinc-100 hover:bg-zinc-900",
+        ].join(" ")}
+      >
+        Ve zpracování
+      </button>
+
+      <button
+        type="submit"
+        name="status"
+        value="DONE"
+        className={[
+          "flex h-11 w-full items-center px-4 text-left text-sm font-semibold transition",
+          inquiry.status === "DONE"
+            ? "bg-white text-zinc-950"
+            : "text-zinc-100 hover:bg-zinc-900",
+        ].join(" ")}
+      >
+        Dokončeno
+      </button>
+
+      <button
+        type="submit"
+        name="status"
+        value="CANCELED"
+        className={[
+          "flex h-11 w-full items-center px-4 text-left text-sm font-semibold transition",
+          inquiry.status === "CANCELED"
+            ? "bg-white text-zinc-950"
+            : "text-red-200 hover:bg-zinc-900",
+        ].join(" ")}
+      >
+        Storno
+      </button>
+    </div>
+  </details>
+</form>
           </div>
 
           {inquiry.note && (

@@ -32,10 +32,21 @@ function statusBadgeColor(status: string) {
 }
 
 function buildTimeline(currentStatus: string) {
-  const isNew = currentStatus === "NEW";
+  const isNew = currentStatus === "NEW" || currentStatus === "IN_PROGRESS" || currentStatus === "DONE";
   const isProgress = currentStatus === "IN_PROGRESS" || currentStatus === "DONE";
   const isDone = currentStatus === "DONE";
   const isCanceled = currentStatus === "CANCELED";
+
+  const dotNew = isCanceled ? "#71717a" : isNew ? "#34d399" : "#71717a";
+  const dotProgress = isCanceled ? "#71717a" : isProgress ? "#34d399" : "#71717a";
+  const dotDone = isCanceled ? "#f87171" : isDone ? "#34d399" : "#71717a";
+
+  const textNew = isCanceled ? "#71717a" : isNew ? "#e4e4e7" : "#71717a";
+  const textProgress = isCanceled ? "#71717a" : isProgress ? "#e4e4e7" : "#71717a";
+  const textDone = isCanceled ? "#fca5a5" : isDone ? "#e4e4e7" : "#71717a";
+
+  const line1 = isCanceled ? "#3f3f46" : isProgress ? "#34d399" : "#3f3f46";
+  const line2 = isCanceled ? "#3f3f46" : isDone ? "#34d399" : "#3f3f46";
 
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 8px 0;">
@@ -43,24 +54,18 @@ function buildTimeline(currentStatus: string) {
         <td align="center">
           <table role="presentation" cellpadding="0" cellspacing="0">
             <tr>
-              <td align="center" style="color:${isNew ? "#34d399" : "#71717a"}; font-size:12px; font-weight:700;">
-                ●
-              </td>
-              <td style="width:48px; border-top:1px solid ${isProgress || isDone ? "#34d399" : "#3f3f46"};"></td>
-              <td align="center" style="color:${isProgress ? "#34d399" : "#71717a"}; font-size:12px; font-weight:700;">
-                ●
-              </td>
-              <td style="width:48px; border-top:1px solid ${isDone ? "#34d399" : "#3f3f46"};"></td>
-              <td align="center" style="color:${isDone ? "#34d399" : isCanceled ? "#f87171" : "#71717a"}; font-size:12px; font-weight:700;">
-                ●
-              </td>
+              <td align="center" style="color:${dotNew}; font-size:12px; font-weight:700;">●</td>
+              <td style="width:48px; border-top:1px solid ${line1};"></td>
+              <td align="center" style="color:${dotProgress}; font-size:12px; font-weight:700;">●</td>
+              <td style="width:48px; border-top:1px solid ${line2};"></td>
+              <td align="center" style="color:${dotDone}; font-size:12px; font-weight:700;">●</td>
             </tr>
             <tr>
-              <td align="center" style="padding-top:8px; color:${isNew ? "#e4e4e7" : "#71717a"}; font-size:11px;">Nová</td>
+              <td align="center" style="padding-top:8px; color:${textNew}; font-size:11px;">Nová</td>
               <td></td>
-              <td align="center" style="padding-top:8px; color:${isProgress ? "#e4e4e7" : "#71717a"}; font-size:11px;">Připravuje se</td>
+              <td align="center" style="padding-top:8px; color:${textProgress}; font-size:11px;">Připravuje se</td>
               <td></td>
-              <td align="center" style="padding-top:8px; color:${isDone ? "#e4e4e7" : isCanceled ? "#fca5a5" : "#71717a"}; font-size:11px;">
+              <td align="center" style="padding-top:8px; color:${textDone}; font-size:11px;">
                 ${isCanceled ? "Storno" : "Dokončeno"}
               </td>
             </tr>
@@ -238,6 +243,7 @@ export async function POST(req: Request) {
     const inquiryId = (body.get("inquiryId") ?? "").toString().trim();
     const statusRaw = (body.get("status") ?? "").toString().trim().toUpperCase();
     const note = (body.get("note") ?? "").toString().trim();
+	const redirectTo = (body.get("redirectTo") ?? "").toString().trim();
 
     if (!inquiryId) {
       return NextResponse.json({ error: "Chybí inquiryId." }, { status: 400 });
@@ -306,7 +312,9 @@ if (subject) {
   });
 }
 
-    return NextResponse.redirect(new URL("/admin/inquiries", req.url));
+    return NextResponse.redirect(
+  new URL(redirectTo || `/admin/inquiries/${inquiryId}`, req.url)
+);
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Chyba serveru." }, { status: 500 });

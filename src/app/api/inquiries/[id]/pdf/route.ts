@@ -106,59 +106,59 @@ export async function GET(
   const orderLabel = `VASCO-${String(inquiry.orderNumber).padStart(4, "0")}`;
 
   // Header
-const headerHeight = 92;
+  const headerHeight = 92;
 
-page.drawRectangle({
-  x: margin,
-  y: y - headerHeight,
-  width: width - margin * 2,
-  height: headerHeight,
-  color: colors.black,
-});
-
-let logoBlockWidth = 0;
-
-if (logoImage) {
-  const targetLogoWidth = 120;
-  const logoScale = targetLogoWidth / logoImage.width;
-  const logoWidth = logoImage.width * logoScale;
-  const logoHeight = logoImage.height * logoScale;
-
-  logoBlockWidth = logoWidth;
-
-  page.drawImage(logoImage, {
-    x: width - margin - logoWidth - 22,
-    y: y - headerHeight / 2 - logoHeight / 2,
-    width: logoWidth,
-    height: logoHeight,
+  page.drawRectangle({
+    x: margin,
+    y: y - headerHeight,
+    width: width - margin * 2,
+    height: headerHeight,
+    color: colors.black,
   });
-}
 
-drawText(page, "Poptávka", margin + 18, y - 28, {
-  font,
-  size: 10,
-  color: rgb(0.82, 0.84, 0.86),
-});
+  let logoBlockWidth = 0;
 
-drawText(page, orderLabel, margin + 18, y - 54, {
-  font: bold,
-  size: 24,
-  color: colors.white,
-  maxWidth: width - margin * 2 - logoBlockWidth - 60,
-});
+  if (logoImage) {
+    const targetLogoWidth = 120;
+    const logoScale = targetLogoWidth / logoImage.width;
+    const logoWidth = logoImage.width * logoScale;
+    const logoHeight = logoImage.height * logoScale;
 
-drawText(
-  page,
-  `Vytvořeno: ${new Date(inquiry.createdAt).toLocaleString("cs-CZ")}`,
-  margin + 18,
-  y - 72,
-  {
-    font,
-    size: 9,
-    color: rgb(0.72, 0.74, 0.77),
-    maxWidth: width - margin * 2 - logoBlockWidth - 60,
+    logoBlockWidth = logoWidth;
+
+    page.drawImage(logoImage, {
+      x: width - margin - logoWidth - 22,
+      y: y - headerHeight / 2 - logoHeight / 2,
+      width: logoWidth,
+      height: logoHeight,
+    });
   }
-);
+
+  drawText(page, "Poptávka", margin + 18, y - 28, {
+    font,
+    size: 10,
+    color: rgb(0.82, 0.84, 0.86),
+  });
+
+  drawText(page, orderLabel, margin + 18, y - 54, {
+    font: bold,
+    size: 24,
+    color: colors.white,
+    maxWidth: width - margin * 2 - logoBlockWidth - 60,
+  });
+
+  drawText(
+    page,
+    `Vytvořeno: ${new Date(inquiry.createdAt).toLocaleString("cs-CZ")}`,
+    margin + 18,
+    y - 72,
+    {
+      font,
+      size: 9,
+      color: rgb(0.72, 0.74, 0.77),
+      maxWidth: width - margin * 2 - logoBlockWidth - 60,
+    }
+  );
 
   y -= 118;
 
@@ -198,25 +198,38 @@ drawText(
     [inquiry.user.firstName, inquiry.user.lastName].filter(Boolean).join(" ").trim() ||
     "—";
 
-  const invoiceStreet =
-    [inquiry.user.invoiceStreet, inquiry.user.invoiceHouseNumber]
-      .filter(Boolean)
-      .join(" ") ||
-    [inquiry.user.street, inquiry.user.houseNumber].filter(Boolean).join(" ");
+  const street =
+    inquiry.user.invoiceStreet ||
+    inquiry.user.street ||
+    "";
 
-  const invoiceCityZip =
-    [inquiry.user.invoiceZip, inquiry.user.invoiceCity].filter(Boolean).join(" ") ||
-    [inquiry.user.zip, inquiry.user.city].filter(Boolean).join(" ");
+  const houseNumber =
+    inquiry.user.invoiceHouseNumber ||
+    inquiry.user.houseNumber ||
+    "";
+
+  const city =
+    inquiry.user.invoiceCity ||
+    inquiry.user.city ||
+    "";
+
+  const zip =
+    inquiry.user.invoiceZip ||
+    inquiry.user.zip ||
+    "";
+
+  const fullStreet = [street, houseNumber].filter(Boolean).join(" ").trim();
+  const fullCity = [zip, city].filter(Boolean).join(" ").trim();
 
   const customerLines = [
     customerName || null,
-    inquiry.user.email ?? null,
-    inquiry.user.phone ?? null,
+    inquiry.user.email || null,
+    inquiry.user.phone || null,
     inquiry.user.companyName || null,
     inquiry.user.ico ? `IČO: ${inquiry.user.ico}` : null,
     inquiry.user.dic ? `DIČ: ${inquiry.user.dic}` : null,
-    invoiceStreet || null,
-    invoiceCityZip || null,
+    fullStreet || null,
+    fullCity || null,
   ].filter(Boolean) as string[];
 
   let leftY = y - 38;

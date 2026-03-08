@@ -18,26 +18,47 @@ export default async function AdminUserDetailPage({
   const id = (rawId ?? "").toString().trim();
   if (!id) notFound();
 
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      inquiries: {
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        select: {
-  id: true,
-  orderNumber: true,
-  status: true,
-  createdAt: true,
-  items: {
-    select: {
-      quantity: true,
-    },
-  },
-},
+const user = await prisma.user.findUnique({
+  where: { id },
+  select: {
+    id: true,
+    email: true,
+    name: true,
+    phone: true,
+    companyName: true,
+    ico: true,
+    dic: true,
+    street: true,
+    houseNumber: true,
+    city: true,
+    zip: true,
+
+    invoiceStreet: true,
+    invoiceHouseNumber: true,
+    invoiceCity: true,
+    invoiceZip: true,
+
+    customerType: true,
+    status: true,
+    createdAt: true,
+
+    inquiries: {
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        createdAt: true,
+        items: {
+          select: {
+            quantity: true,
+          },
+        },
       },
     },
-  });
+  },
+});
 
   if (!user) notFound();
 
@@ -46,7 +67,7 @@ export default async function AdminUserDetailPage({
       <header className="border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div>
-            <div className="text-xl font-semibold tracking-tight">Karta klienta</div>
+            <div className="text-xl font-semibold tracking-tight">KARTA ZÁKAZNÍKA</div>
             <div className="mt-1 text-sm text-zinc-400">
               Detail pro schválení a kontakt.
             </div>

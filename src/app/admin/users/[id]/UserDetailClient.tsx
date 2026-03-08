@@ -14,6 +14,10 @@ type UserPayload = {
   houseNumber?: string | null;
   city?: string | null;
   zip?: string | null;
+  invoiceStreet?: string | null;
+  invoiceHouseNumber?: string | null;
+  invoiceCity?: string | null;
+  invoiceZip?: string | null;
   customerType: string;
   status: string;
   createdAt: string | Date;
@@ -51,7 +55,7 @@ function FieldCard({
         {editing ? (
           input
         ) : (
-          <div className="text-sm font-semibold text-zinc-100 break-words">{value || "—"}</div>
+          <div className="break-words text-sm font-semibold text-zinc-100">{value || "—"}</div>
         )}
       </div>
     </div>
@@ -71,11 +75,15 @@ export default function UserDetailClient({ user }: { user: UserPayload }) {
     phone: user.phone ?? "",
     companyName: user.companyName ?? "",
     ico: user.ico ?? "",
-    dic: (user as any).dic ?? "",
-    street: (user as any).street ?? "",
-    houseNumber: (user as any).houseNumber ?? "",
+    dic: user.dic ?? "",
+    street: user.street ?? "",
+    houseNumber: user.houseNumber ?? "",
     city: user.city ?? "",
-    zip: (user as any).zip ?? "",
+    zip: user.zip ?? "",
+    invoiceStreet: user.invoiceStreet ?? "",
+    invoiceHouseNumber: user.invoiceHouseNumber ?? "",
+    invoiceCity: user.invoiceCity ?? "",
+    invoiceZip: user.invoiceZip ?? "",
   });
 
   function cancel() {
@@ -86,11 +94,15 @@ export default function UserDetailClient({ user }: { user: UserPayload }) {
       phone: user.phone ?? "",
       companyName: user.companyName ?? "",
       ico: user.ico ?? "",
-      dic: (user as any).dic ?? "",
-      street: (user as any).street ?? "",
-      houseNumber: (user as any).houseNumber ?? "",
+      dic: user.dic ?? "",
+      street: user.street ?? "",
+      houseNumber: user.houseNumber ?? "",
       city: user.city ?? "",
-      zip: (user as any).zip ?? "",
+      zip: user.zip ?? "",
+      invoiceStreet: user.invoiceStreet ?? "",
+      invoiceHouseNumber: user.invoiceHouseNumber ?? "",
+      invoiceCity: user.invoiceCity ?? "",
+      invoiceZip: user.invoiceZip ?? "",
     });
     setEditing(false);
   }
@@ -100,12 +112,13 @@ export default function UserDetailClient({ user }: { user: UserPayload }) {
     setErr(null);
     setOk(null);
 
-const trimmed = form.name.trim();
-const parts = trimmed.split(/\s+/).filter(Boolean);
-if (parts.length < 2) {
-  setErr("Vyplň jméno a příjmení (např. „Jan Novák“).");
-  return;
-}
+    const trimmed = form.name.trim();
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    if (parts.length < 2) {
+      setErr("Vyplň jméno a příjmení (např. „Jan Novák“).");
+      setSaving(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/admin/users/update", {
@@ -117,15 +130,13 @@ if (parts.length < 2) {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setErr(data?.error || "Nepodařilo se uložit změny.");
+        setErr((data as any)?.error || "Nepodařilo se uložit změny.");
+        setSaving(false);
         return;
       }
 
       setOk("Uloženo.");
       setEditing(false);
-
-      // Volitelné: refresh, aby se server stránka překreslila s novými daty
-      // (když nechceš refresh, můžeš si jen upravit lokální user, ale tohle je nejjednodušší)
       window.location.reload();
     } finally {
       setSaving(false);
@@ -135,12 +146,15 @@ if (parts.length < 2) {
   const inputClass =
     "h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 text-sm font-semibold text-zinc-100 outline-none focus:border-zinc-700";
 
+  const hasInvoiceAddress =
+    !!user.invoiceStreet || !!user.invoiceHouseNumber || !!user.invoiceCity || !!user.invoiceZip;
+
   return (
     <div className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-lg font-semibold truncate">{user.name || "—"}</div>
-          <div className="mt-1 text-sm text-zinc-400 truncate">{user.email}</div>
+          <div className="truncate text-lg font-semibold">{user.name || "—"}</div>
+          <div className="mt-1 truncate text-sm text-zinc-400">{user.email}</div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -206,16 +220,11 @@ if (parts.length < 2) {
           }
         />
 
-        <FieldCard
-          label="Email"
-          value={user.email}
-          editing={false}
-          input={null}
-        />
+        <FieldCard label="Email" value={user.email} editing={false} input={null} />
 
         <FieldCard
           label="Telefon"
-          value={(user.phone as any) ?? "—"}
+          value={user.phone ?? "—"}
           editing={editing}
           input={
             <input
@@ -229,7 +238,7 @@ if (parts.length < 2) {
 
         <FieldCard
           label="Firma"
-          value={(user.companyName as any) ?? "—"}
+          value={user.companyName ?? "—"}
           editing={editing}
           input={
             <input
@@ -243,7 +252,7 @@ if (parts.length < 2) {
 
         <FieldCard
           label="IČO"
-          value={(user.ico as any) ?? "—"}
+          value={user.ico ?? "—"}
           editing={editing}
           input={
             <input
@@ -257,7 +266,7 @@ if (parts.length < 2) {
 
         <FieldCard
           label="DIČ"
-          value={(user as any).dic ?? "—"}
+          value={user.dic ?? "—"}
           editing={editing}
           input={
             <input
@@ -271,7 +280,7 @@ if (parts.length < 2) {
 
         <FieldCard
           label="Ulice"
-          value={(user as any).street ?? "—"}
+          value={user.street ?? "—"}
           editing={editing}
           input={
             <input
@@ -285,7 +294,7 @@ if (parts.length < 2) {
 
         <FieldCard
           label="Číslo popisné"
-          value={(user as any).houseNumber ?? "—"}
+          value={user.houseNumber ?? "—"}
           editing={editing}
           input={
             <input
@@ -313,7 +322,7 @@ if (parts.length < 2) {
 
         <FieldCard
           label="PSČ"
-          value={(user as any).zip ?? "—"}
+          value={user.zip ?? "—"}
           editing={editing}
           input={
             <input
@@ -324,9 +333,87 @@ if (parts.length < 2) {
             />
           }
         />
+      </div>
 
-        <FieldCard label="Typ zákazníka" value={customerTypeCz(user.customerType)} editing={false} input={null} />
-        <FieldCard label="Stav účtu" value={statusCz(user.status)} editing={false} input={null} />
+      <div className="mt-6 rounded-2xl border border-zinc-900 bg-zinc-950/20 p-5">
+        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+          Fakturační údaje
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <FieldCard
+            label="Fakturační ulice"
+            value={hasInvoiceAddress ? user.invoiceStreet ?? "—" : "Stejná jako kontaktní"}
+            editing={editing}
+            input={
+              <input
+                className={inputClass}
+                value={form.invoiceStreet}
+                onChange={(e) => setForm((p) => ({ ...p, invoiceStreet: e.target.value }))}
+                placeholder="Fakturační ulice"
+              />
+            }
+          />
+
+          <FieldCard
+            label="Fakturační číslo popisné"
+            value={hasInvoiceAddress ? user.invoiceHouseNumber ?? "—" : "Stejné jako kontaktní"}
+            editing={editing}
+            input={
+              <input
+                className={inputClass}
+                value={form.invoiceHouseNumber}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, invoiceHouseNumber: e.target.value }))
+                }
+                placeholder="Fakturační č.p."
+              />
+            }
+          />
+
+          <FieldCard
+            label="Fakturační město"
+            value={hasInvoiceAddress ? user.invoiceCity ?? "—" : "Stejné jako kontaktní"}
+            editing={editing}
+            input={
+              <input
+                className={inputClass}
+                value={form.invoiceCity}
+                onChange={(e) => setForm((p) => ({ ...p, invoiceCity: e.target.value }))}
+                placeholder="Fakturační město"
+              />
+            }
+          />
+
+          <FieldCard
+            label="Fakturační PSČ"
+            value={hasInvoiceAddress ? user.invoiceZip ?? "—" : "Stejné jako kontaktní"}
+            editing={editing}
+            input={
+              <input
+                className={inputClass}
+                value={form.invoiceZip}
+                onChange={(e) => setForm((p) => ({ ...p, invoiceZip: e.target.value }))}
+                placeholder="Fakturační PSČ"
+              />
+            }
+          />
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <FieldCard
+          label="Typ zákazníka"
+          value={customerTypeCz(user.customerType)}
+          editing={false}
+          input={null}
+        />
+        <FieldCard
+          label="Stav účtu"
+          value={statusCz(user.status)}
+          editing={false}
+          input={null}
+        />
         <FieldCard label="Vytvořeno" value={created} editing={false} input={null} />
       </div>
     </div>
