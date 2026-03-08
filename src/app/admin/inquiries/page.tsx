@@ -145,7 +145,8 @@ const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
-      createdAt: true,
+      orderNumber: true,
+	  createdAt: true,
       status: true,
       customerTypeSnapshot: true,
       statusSnapshot: true,
@@ -231,7 +232,13 @@ const activeFilter = allowedStatuses.includes(filter as any) ? filter : null;
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
-                        <div className="truncate text-base font-semibold">{buyerTitle}</div>
+                        <div className="truncate text-base font-semibold">
+  {buyerTitle}
+</div>
+
+<div className="mt-1 text-xs text-zinc-500">
+  Objednávka VASCO-{String(inq.orderNumber).padStart(4,"0")}
+</div>
                         <div className="mt-1 truncate text-xs text-zinc-400">{inq.user.email}</div>
 
                         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">

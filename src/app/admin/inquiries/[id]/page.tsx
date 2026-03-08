@@ -23,13 +23,27 @@ export default async function AdminInquiryDetailPage({
   const id = (rawId ?? "").toString().trim();
   if (!id) notFound();
 
-  const inquiry = await prisma.inquiry.findUnique({
-    where: { id },
-    include: {
-      user: { select: { email: true, name: true } },
-      items: { orderBy: { id: "asc" } },
+ const inquiry = await prisma.inquiry.findUnique({
+  where: { id },
+  select: {
+    id: true,
+    orderNumber: true,
+    createdAt: true,
+    status: true,
+    note: true,
+    customerTypeSnapshot: true,
+    statusSnapshot: true,
+    user: {
+      select: {
+        email: true,
+        name: true,
+      },
     },
-  });
+    items: {
+      orderBy: { id: "asc" },
+    },
+  },
+});
 
   if (!inquiry) notFound();
 
@@ -45,7 +59,9 @@ export default async function AdminInquiryDetailPage({
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div>
             <div className="text-xl font-semibold tracking-tight">Detail poptávky</div>
-            <div className="text-sm text-zinc-400">{inquiry.id}</div>
+           <div className="text-sm text-zinc-400">
+  VASCO-{String(inquiry.orderNumber).padStart(4, "0")}
+</div>
           </div>
           <Link
             href="/admin/inquiries"
@@ -75,15 +91,15 @@ export default async function AdminInquiryDetailPage({
               method="post"
               className="flex items-center gap-2"
             >
-              <input type="hidden" name="id" value={inquiry.id} />
+             <input type="hidden" name="inquiryId" value={inquiry.id} />
               <select
                 name="status"
                 defaultValue={inquiry.status}
                 className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm text-zinc-100"
               >
-                <option value="NEW">NEW</option>
-                <option value="IN_PROGRESS">IN_PROGRESS</option>
-                <option value="DONE">DONE</option>
+                <option value="NEW">NOVÁ POPTÁVKA</option>
+                <option value="IN_PROGRESS">VE ZPRACOVÁNÍ</option>
+                <option value="DONE">DOKONČIT</option>
               </select>
               <button className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
                 Uložit
