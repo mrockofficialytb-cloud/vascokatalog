@@ -63,10 +63,10 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-12">
-      <div className="lg:col-span-7">
+    <div className="grid gap-4 lg:grid-cols-12 lg:gap-8">
+      <div className="min-w-0 lg:col-span-7">
         <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-          <div className="relative aspect-[4/3] w-full bg-zinc-100">
+          <div className="relative aspect-[4/5] w-full bg-zinc-100 sm:aspect-[4/3]">
             <Image
               src={activeSrc}
               alt={`${product.name} – ${decorLabel}`}
@@ -76,72 +76,60 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
               priority
             />
 
-            {gallery.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setActiveImage((v) => (v - 1 + gallery.length) % gallery.length)}
-                  className="absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-2xl border border-zinc-200 bg-white/90 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-                  aria-label="Předchozí"
-                >
-                  ←
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveImage((v) => (v + 1) % gallery.length)}
-                  className="absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-2xl border border-zinc-200 bg-white/90 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-                  aria-label="Další"
-                >
-                  →
-                </button>
-              </>
-            )}
+            
 
-            <div className="absolute left-4 top-4">
+            <div className="absolute left-3 top-3 sm:left-4 sm:top-4">
               <span className="rounded-full border border-zinc-200 bg-white/90 px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-800 backdrop-blur">
                 {(product.collection || "COLLECTION").toUpperCase()}
               </span>
             </div>
           </div>
 
-          <div className="border-t border-zinc-200 bg-white p-4">
+          <div className="border-t border-zinc-200 bg-white p-3 sm:p-4">
             <div className="mb-2 text-xs font-semibold text-zinc-500">Vzory dekoru</div>
 
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {swatches.map((d) => {
-                const isActive = d.id === decor;
-                return (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => selectDecor(d.id)}
-                    className={[
-                      "h-16 w-16 shrink-0 overflow-hidden rounded-xl border bg-white transition hover:border-zinc-300",
-                      isActive ? "border-black" : "border-zinc-200",
-                    ].join(" ")}
-                    aria-label={d.label}
-                    title={d.label}
-                  >
-                    <div className="relative h-full w-full">
-                      <Image src={d.swatchUrl} alt={d.label} fill className="object-cover" />
-                      {isActive && <div className="absolute inset-0 ring-2 ring-black/20" />}
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="-mx-1 overflow-x-auto px-1 pb-2">
+              <div className="flex w-max gap-2 pr-2 sm:gap-3">
+                {swatches.map((d) => {
+                  const isActive = d.id === decor;
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => selectDecor(d.id)}
+                      className={[
+                        "h-14 w-14 shrink-0 overflow-hidden rounded-xl border bg-white transition hover:border-zinc-300 sm:h-16 sm:w-16",
+                        isActive ? "border-black" : "border-zinc-200",
+                      ].join(" ")}
+                      aria-label={d.label}
+                      title={d.label}
+                    >
+                      <div className="relative h-full w-full">
+                        <Image src={d.swatchUrl} alt={d.label} fill className="object-cover" />
+                        {isActive && <div className="absolute inset-0 ring-2 ring-black/20" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="lg:col-span-5">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="text-xl font-semibold tracking-tight text-zinc-900">{product.name}</div>
-          <div className="mt-2 text-sm text-zinc-500">{product.description || "—"}</div>
+      <div className="min-w-0 lg:col-span-5">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6">
+          <div className="break-words text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
+            {product.name}
+          </div>
+
+          <div className="mt-2 break-words text-sm leading-6 text-zinc-500">
+            {product.description || "—"}
+          </div>
 
           <div className="mt-6">
             <div className="text-xs text-zinc-500">Cena</div>
-            <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
+            <div className="mt-1 break-words text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
               {product.priceLabel}
             </div>
           </div>
@@ -154,9 +142,9 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                 ref={decorDetailsRef}
                 className="group rounded-2xl border border-zinc-200 bg-white"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-zinc-900">
-                  <span>{decorLabel}</span>
-                  <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-zinc-900">
+                  <span className="min-w-0 truncate">{decorLabel}</span>
+                  <span className="shrink-0 text-zinc-400 transition group-open:rotate-180">▾</span>
                 </summary>
 
                 <div className="border-t border-zinc-200 p-2">
@@ -185,7 +173,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                 <button
                   type="button"
                   onClick={() => setQty((v) => Math.max(1, v - 1))}
-                  className="h-12 w-12 rounded-2xl border border-zinc-200 bg-white text-lg font-semibold text-zinc-900 transition hover:bg-zinc-50"
+                  className="h-11 w-11 shrink-0 rounded-2xl border border-zinc-200 bg-white text-lg font-semibold text-zinc-900 transition hover:bg-zinc-50 sm:h-12 sm:w-12"
                 >
                   −
                 </button>
@@ -194,13 +182,13 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                   value={safeQty}
                   onChange={(e) => setQty(Number(e.target.value || 1))}
                   inputMode="numeric"
-                  className="h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-center text-sm font-semibold text-zinc-900 outline-none focus:border-zinc-400"
+                  className="h-11 min-w-0 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-center text-sm font-semibold text-zinc-900 outline-none focus:border-zinc-400 sm:h-12"
                 />
 
                 <button
                   type="button"
                   onClick={() => setQty((v) => Math.min(999, v + 1))}
-                  className="h-12 w-12 rounded-2xl border border-zinc-200 bg-white text-lg font-semibold text-zinc-900 transition hover:bg-zinc-50"
+                  className="h-11 w-11 shrink-0 rounded-2xl border border-zinc-200 bg-white text-lg font-semibold text-zinc-900 transition hover:bg-zinc-50 sm:h-12 sm:w-12"
                 >
                   +
                 </button>
@@ -212,7 +200,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             {canOrder ? (
               <button
                 type="button"
-                className="h-12 w-full rounded-2xl bg-black text-sm font-semibold text-white transition hover:bg-zinc-800"
+                className="h-11 w-full rounded-2xl bg-black px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 sm:h-12"
                 onClick={async () => {
                   try {
                     const res = await fetch("/api/cart/add", {
@@ -243,7 +231,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-black text-sm font-semibold text-white transition hover:bg-zinc-800"
+                className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-black px-4 text-center text-sm font-semibold text-white transition hover:bg-zinc-800 sm:h-12"
               >
                 Přihlásit a vytvořit poptávku
               </Link>

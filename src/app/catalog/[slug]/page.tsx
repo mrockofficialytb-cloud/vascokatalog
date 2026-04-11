@@ -2,8 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import { isAdminEmail } from "@/lib/admin";
+import Header from "@/components/Header";
 import ProductDetailClient from "./ProductDetailClient";
 
 function formatCzk(amountCzk: number | null | undefined) {
@@ -13,27 +12,6 @@ function formatCzk(amountCzk: number | null | undefined) {
     style: "currency",
     currency: "CZK",
   }).format(val);
-}
-
-function customerTypeCz(type?: string) {
-  if (type === "B2B_BIG") return "Velkoodběratel";
-  if (type === "B2B_SMALL") return "Maloodběratel";
-  if (type === "B2C") return "Základní nabídka";
-  return "Zákazník";
-}
-
-function statusCz(status?: string) {
-  if (status === "ACTIVE") return "Schváleno";
-  if (status === "PENDING") return "Čeká na schválení";
-  if (status === "DISABLED") return "Odmítnuto";
-  return "Neznámý stav";
-}
-
-function getInitials(name?: string | null) {
-  if (!name) return "?";
-  const parts = name.trim().split(" ");
-  if (parts.length === 1) return parts[0][0]?.toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
 type Decor = {
@@ -361,29 +339,6 @@ export default async function ProductDetailPage({
   if (!slug) notFound();
 
   const isLoggedIn = !!session?.user?.email;
-  const customerType = (session as any)?.customerType as
-    | "B2C"
-    | "B2B_SMALL"
-    | "B2B_BIG"
-    | undefined;
-
-  const status = (session as any)?.status as "ACTIVE" | "PENDING" | "DISABLED" | undefined;
-
-  const email = session?.user?.email ?? null;
-  const isAdmin = isAdminEmail(email);
-
-  const userId = (session as any)?.userId as string | undefined;
-
-  const userName =
-    (session?.user as any)?.name ||
-    (session as any)?.name ||
-    (session as any)?.user?.name ||
-    null;
-
-  const primaryLabel = userName || email || "Uživatel";
-
-  const cartCount =
-    isLoggedIn && userId ? await prisma.cartItem.count({ where: { cart: { userId } } }) : 0;
 
   const product = await prisma.product.findUnique({
     where: { slug },
@@ -428,116 +383,20 @@ export default async function ProductDetailPage({
 
   return (
     <main className="min-h-screen bg-white text-zinc-900">
-      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[1800px] items-center justify-between px-6 py-3">
-          <Link href="/catalog" className="flex items-center">
-            <Image
-              src="/vascologo.png"
-              alt="VASCO"
-              width={400}
-              height={200}
-              priority
-              style={{ height: "100px", width: "auto" }}
-            />
-          </Link>
+      <Header />
 
-          {!isLoggedIn ? (
-            <div className="flex items-center gap-3">
-              <Link
-                className="text-sm font-semibold text-zinc-700 transition hover:text-black"
-                href="/login"
-              >
-                Přihlásit
-              </Link>
-              <span className="text-zinc-300">•</span>
-              <Link
-                className="inline-flex h-11 items-center justify-center rounded-2xl bg-black px-5 text-sm font-semibold text-white transition hover:bg-zinc-800"
-                href="/register"
-              >
-                Registrovat
-              </Link>
+      <div className="mx-auto max-w-[1800px] px-3 py-6 sm:px-6 sm:py-10">
+        <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="break-words text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
+              {product.name}
             </div>
-          ) : (
-            <div className="flex flex-1 items-center justify-end">
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/cart"
-                  className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
-                >
-                  Poptávka
-                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs text-zinc-700">
-                    {cartCount}
-                  </span>
-                </Link>
-
-                <div className="hidden h-12 min-w-[320px] items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 sm:flex">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
-                    {getInitials(userName || email || "")}
-                  </div>
-
-                  <div className="flex flex-col leading-tight">
-                    <span className="whitespace-nowrap text-sm font-semibold text-zinc-900">
-                      {primaryLabel}
-                    </span>
-
-                    {isAdmin ? (
-                      <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                        Administrátor
-                      </span>
-                    ) : (
-                      <span className="mt-1 text-xs font-semibold text-zinc-500">
-                        {customerTypeCz(customerType)} • {statusCz(status)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <form action="/logout" method="post">
-                  <button className="h-12 rounded-2xl bg-black px-5 text-sm font-semibold text-white transition hover:bg-zinc-800">
-                    Odhlásit
-                  </button>
-                </form>
-
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="ml-3 inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
-                  >
-                    <svg
-                      className="h-5 w-5 text-zinc-500"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M4 3h10v18H4z" />
-                      <circle cx="11" cy="12" r="0.8" fill="currentColor" />
-                      <path
-                        d="M14 12h6M17 9l3 3-3 3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <span>Administrace</span>
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-[1800px] px-6 py-10">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <div className="text-2xl font-semibold tracking-tight text-zinc-900">{product.name}</div>
             <div className="mt-1 text-sm text-zinc-500">Kolekce: {collection}</div>
           </div>
 
           <Link
             href="/catalog"
-            className="inline-flex h-12 items-center rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+            className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 sm:h-12"
           >
             Zpět do katalogu
           </Link>
