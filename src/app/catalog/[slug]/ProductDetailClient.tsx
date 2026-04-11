@@ -20,6 +20,17 @@ type Props = {
   canOrder: boolean;
 };
 
+type SpecItem = {
+  label: string;
+  value: string;
+};
+
+type SpecBlock = {
+  title: string;
+  items: SpecItem[];
+  imageUrl?: string;
+};
+
 export default function ProductDetailClient({ product, canOrder }: Props) {
   const router = useRouter();
 
@@ -62,6 +73,117 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
     closeDecorDropdown();
   }
 
+  const specs = useMemo<SpecBlock>(() => {
+    const slug = product.slug.toLowerCase();
+    const collection = (product.collection || "").toUpperCase();
+
+    if (
+      slug === "riffcello-doplnkove-listy-standard" ||
+      slug === "riffcello-doplnkove-listy-premium"
+    ) {
+      return {
+        title: "Specifikace výrobku:",
+        items: [
+          { label: "Výška", value: "2750 mm" },
+          { label: "Počet lišt v sadě", value: "2" },
+          { label: "Startovací / roh", value: "47 mm" },
+          { label: "Koncová / roh", value: "40 mm" },
+          { label: "Funkce", value: "Estetické zahájení nebo ukončení panelů" },
+          { label: "Výsledek", value: "Jednotné a elegantní dokončení" },
+        ],
+        imageUrl: "/specifikace/riffcello-listy-schema.png",
+      };
+    }
+
+    if (collection === "RIFFCELLO") {
+      return {
+        title: "Specifikace výrobku:",
+        items: [
+          { label: "Výška", value: "275 cm" },
+          { label: "Rozměr panelu", value: "195 × 2750 mm" },
+          { label: "Počet panelů v sadě", value: "2" },
+          { label: "Celková šířka po spojení", value: "390 mm" },
+          { label: "Typ", value: "Dekorativní nástěnné lamely" },
+          { label: "Charakter", value: "Výrazná struktura a moderní vzhled" },
+        ],
+        imageUrl: "/specifikace/riffcello-schema.png",
+      };
+    }
+
+    if (collection === "CLASSIC") {
+      return {
+        title: "Specifikace výrobku:",
+        items: [
+          { label: "Výška", value: "275 cm" },
+          { label: "Šířka panelu", value: "27 cm" },
+          { label: "Počet lamel na panelu", value: "6" },
+          { label: "Šířka lamely", value: "27 mm" },
+          { label: "Mezera mezi lamelami", value: "18 mm" },
+          { label: "Výška lamely", value: "8 mm" },
+          { label: "Tloušťka filcu", value: "6 mm" },
+        ],
+        imageUrl: "/specifikace/classic-schema.png",
+      };
+    }
+
+    if (collection === "PREMIUM") {
+      return {
+        title: "Specifikace výrobku:",
+        items: [
+          { label: "Výška", value: "275 cm" },
+          { label: "Šířka panelu", value: "27 cm" },
+          { label: "Počet lamel na panelu", value: "6" },
+          { label: "Šířka lamely", value: "27 mm" },
+          { label: "Mezera mezi lamelami", value: "18 mm" },
+          { label: "Výška lamely", value: "8 mm" },
+          { label: "Tloušťka filcu", value: "6 mm" },
+        ],
+        imageUrl: "/specifikace/premium-schema.png",
+      };
+    }
+
+    if (collection === "SPAZIO") {
+      return {
+        title: "Specifikace výrobku:",
+        items: [
+          { label: "Výška", value: "260 cm" },
+          { label: "Šířka panelu", value: "27 cm" },
+          { label: "Počet lamel na panelu", value: "4" },
+          { label: "Šířka lamely", value: "35 mm" },
+          { label: "Mezera mezi lamelami", value: "32 mm" },
+          { label: "Výška lamely", value: "8 mm" },
+          { label: "Tloušťka filcu", value: "6 mm" },
+        ],
+        imageUrl: "/specifikace/spazio-schema.png",
+      };
+    }
+
+    if (collection === "MODULLO") {
+      return {
+        title: "Specifikace výrobku:",
+        items: [
+          { label: "Výška", value: "275 cm" },
+          { label: "Šířka panelu", value: "271 mm" },
+          { label: "Šířka spojky", value: "31 mm" },
+          { label: "Počet lamel na panelu", value: "5" },
+          { label: "Šířka lamely", value: "35 mm" },
+          { label: "Mezera mezi lamelami", value: "24 mm" },
+          { label: "Výška lamely", value: "8 mm" },
+          { label: "Tloušťka HDF desky", value: "2,5 mm" },
+        ],
+        imageUrl: "/specifikace/modullo-schema.png",
+      };
+    }
+
+    return {
+      title: "Specifikace výrobku:",
+      items: [],
+    };
+  }, [product.collection, product.slug]);
+
+  const leftColumn = specs.items.slice(0, 4);
+  const rightColumn = specs.items.slice(4, 8);
+
   return (
     <div className="grid gap-4 lg:grid-cols-12 lg:gap-8">
       <div className="min-w-0 lg:col-span-7">
@@ -75,8 +197,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
               className="object-cover"
               priority
             />
-
-            
 
             <div className="absolute left-3 top-3 sm:left-4 sm:top-4">
               <span className="rounded-full border border-zinc-200 bg-white/90 px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-800 backdrop-blur">
@@ -237,6 +357,53 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
               </Link>
             )}
           </div>
+        </div>
+
+        <div className="mt-4 sm:mt-6">
+          <div className="text-xl font-semibold tracking-tight text-zinc-900">
+            {specs.title}
+          </div>
+
+          {specs.items.length > 0 && (
+            <div className="mt-5 grid grid-cols-1 gap-x-12 gap-y-2 text-sm text-zinc-700 sm:grid-cols-2">
+              <div className="space-y-2">
+                {leftColumn.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start justify-between gap-4 border-b border-zinc-100 pb-1 leading-6"
+                  >
+                    <span className="text-zinc-500">{item.label}</span>
+                    <span className="text-right font-medium text-zinc-900">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                {rightColumn.map((item, i) => (
+                  <div
+                    key={i + 100}
+                    className="flex items-start justify-between gap-4 border-b border-zinc-100 pb-1 leading-6"
+                  >
+                    <span className="text-zinc-500">{item.label}</span>
+                    <span className="text-right font-medium text-zinc-900">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {specs.imageUrl && (
+            <div className="mt-6">
+ <div className="relative aspect-[4/3] w-full max-w-lg mx-auto">
+    <Image
+      src={specs.imageUrl}
+      alt="Technický nákres produktu"
+      fill
+      className="object-contain object-top"
+    />
+  </div>
+</div>
+          )}
         </div>
       </div>
     </div>

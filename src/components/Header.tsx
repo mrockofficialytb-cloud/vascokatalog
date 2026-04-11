@@ -61,7 +61,7 @@ export default async function Header() {
   width={400}
   height={200}
   priority
-  className="h-24 sm:h-16 md:h-18 w-auto"
+  className="h-32 sm:h-24 md:h-24 w-auto"
 />
         </Link>
 

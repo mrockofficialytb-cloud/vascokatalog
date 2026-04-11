@@ -2,9 +2,12 @@
 
 :root {
   color-scheme: light;
-
   --background: #ffffff;
-  --foreground: #09090b; /* zinc-900 */
+  --foreground: #09090b;
+}
+
+html {
+  font-size: 85%;
 }
 
 body {
