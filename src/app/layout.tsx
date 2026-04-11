@@ -2,8 +2,8 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "VASCO – katalog",
-  description: "B2B katalog s řízeným přístupem k cenám",
+  title: "Dveře VASCO - e-katalog",
+  description: "E-katalog akustických lamel a panelů",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
