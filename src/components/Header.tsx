@@ -3,6 +3,7 @@ import Image from "next/image";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminEmail } from "@/lib/admin";
+import HeaderMobileMenu from "@/components/HeaderMobileMenu";
 
 function customerTypeCz(type?: string) {
   if (type === "B2B_BIG") return "Velkoodběratel";
@@ -46,101 +47,102 @@ export default async function Header() {
   const primaryLabel = userName || email || "Uživatel";
 
   const cartCount =
-    isLoggedIn && userId ? await prisma.cartItem.count({ where: { cart: { userId } } }) : 0;
+    isLoggedIn && userId
+      ? await prisma.cartItem.count({ where: { cart: { userId } } })
+      : 0;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        {/* Left brand */}
-        <Link href="/catalog" className="flex items-center">
+    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3 px-3 py-3 sm:px-6">
+        <Link href="/catalog" className="flex shrink-0 items-center">
           <Image
-            src="/vascologo.png"
-            alt="VASCO"
-            width={400}
-            height={200}
-            priority
-            style={{ height: "100px", width: "auto" }}
-          />
+  src="/vascologo.png"
+  alt="VASCO"
+  width={400}
+  height={200}
+  priority
+  className="h-24 sm:h-16 md:h-18 w-auto"
+/>
         </Link>
 
-        {/* Right actions */}
+        <div className="md:hidden">
+          <HeaderMobileMenu
+            isLoggedIn={isLoggedIn}
+            isAdmin={isAdmin}
+            cartCount={cartCount}
+            primaryLabel={primaryLabel}
+            secondaryLabel={
+              isAdmin
+                ? "Administrátor"
+                : `${customerTypeCz(customerType)} • ${statusCz(status)}`
+            }
+            initials={getInitials(userName || email || "")}
+          />
+        </div>
+
         {!isLoggedIn ? (
-          <div className="flex items-center gap-3">
-            <Link className="text-sm font-semibold text-zinc-200 hover:text-white" href="/login">
+          <div className="hidden items-center gap-3 md:flex">
+            <Link
+              className="inline-flex h-10 items-center rounded-xl px-3 text-sm font-semibold text-zinc-700 transition hover:text-black"
+              href="/login"
+            >
               Přihlásit
             </Link>
-            <span className="text-zinc-700">•</span>
-            <Link className="text-sm font-semibold text-zinc-200 hover:text-white" href="/register">
-              Registrovat
+
+            <Link
+              className="inline-flex h-10 items-center rounded-xl bg-black px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
+              href="/register"
+            >
+              Zaregistrovat
             </Link>
           </div>
         ) : (
-          <div className="flex flex-1 items-center justify-end">
+          <div className="hidden min-w-0 flex-1 items-center justify-end md:flex">
             <div className="flex items-center gap-3">
-              {/* Poptávka */}
               <Link
                 href="/cart"
-                className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-5 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
+                className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
               >
-                Poptávka
-                <span className="rounded-full border border-zinc-800 bg-zinc-950/40 px-2 py-0.5 text-xs">
+                <span>Poptávka</span>
+                <span className="rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700">
                   {cartCount}
                 </span>
               </Link>
 
-              {/* User box */}
-              <div className="hidden h-12 min-w-[320px] items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/60 px-4 sm:flex">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+              <div className="hidden h-10 min-w-[240px] max-w-[320px] items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 xl:flex">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-xs font-semibold text-white">
                   {getInitials(userName || email || "")}
                 </div>
 
-                <div className="flex flex-col leading-tight">
-                  <span className="whitespace-nowrap text-sm font-semibold text-zinc-100">
+                <div className="min-w-0 flex-1 leading-tight">
+                  <div className="truncate text-sm font-semibold text-zinc-900">
                     {primaryLabel}
-                  </span>
+                  </div>
 
                   {isAdmin ? (
-                    <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    <div className="text-xs font-semibold text-emerald-600">
                       Administrátor
-                    </span>
+                    </div>
                   ) : (
-                    <span className="mt-1 text-xs font-semibold text-zinc-400">
+                    <div className="truncate text-xs text-zinc-500">
                       {customerTypeCz(customerType)} • {statusCz(status)}
-                    </span>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Odhlásit */}
               <form action="/logout" method="post">
-                <button className="h-12 rounded-2xl bg-white px-5 text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
+                <button className="h-10 rounded-xl bg-black px-4 text-sm font-semibold text-white transition hover:bg-zinc-800">
                   Odhlásit
                 </button>
               </form>
 
-              {/* Admin */}
               {isAdmin && (
                 <Link
                   href="/admin"
-                  className="ml-6 inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-5 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
+                  className="hidden h-10 items-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 2xl:inline-flex"
                 >
-                  <svg
-                    className="h-5 w-5 text-zinc-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M4 3h10v18H4z" />
-                    <circle cx="11" cy="12" r="0.8" fill="currentColor" />
-                    <path
-                      d="M14 12h6M17 9l3 3-3 3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span>Administrace</span>
+                  Administrace
                 </Link>
               )}
             </div>

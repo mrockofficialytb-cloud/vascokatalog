@@ -1,10 +1,14 @@
 import { Suspense } from "react";
+import Header from "@/components/Header";
 import ForgotPasswordClient from "./ForgotPasswordClient";
 
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
-      <ForgotPasswordClient />
-    </Suspense>
+    <>
+      <Header />
+      <Suspense fallback={<div className="min-h-screen bg-white" />}>
+        <ForgotPasswordClient />
+      </Suspense>
+    </>
   );
 }

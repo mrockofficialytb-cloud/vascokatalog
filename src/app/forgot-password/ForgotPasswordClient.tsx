@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Button, Card, Container, H1, Input } from "@/components/ui";
 
 export default function ForgotPasswordClient() {
   const [email, setEmail] = useState("");
@@ -32,7 +29,9 @@ export default function ForgotPasswordClient() {
         return;
       }
 
-      setMsg("Pokud účet s tímto e-mailem existuje, poslali jsme vám odkaz pro nastavení nového hesla.");
+      setMsg(
+        "Pokud účet s tímto e-mailem existuje, poslali jsme vám odkaz pro nastavení nového hesla."
+      );
       setLoading(false);
     } catch {
       setErr("Nepodařilo se odeslat reset hesla.");
@@ -41,72 +40,53 @@ export default function ForgotPasswordClient() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(1200px_circle_at_10%_0%,rgba(255,255,255,0.06),transparent_55%),radial-gradient(900px_circle_at_90%_10%,rgba(255,255,255,0.05),transparent_50%),radial-gradient(700px_circle_at_50%_120%,rgba(255,255,255,0.04),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.6))]" />
-      </div>
-
-      <header className="sticky top-0 z-20 border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link href="/catalog" className="flex items-center">
-            <Image
-              src="/vascologo.png"
-              alt="VASCO"
-              width={400}
-              height={200}
-              priority
-              style={{ height: "90px", width: "auto" }}
-            />
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-semibold text-zinc-200 hover:text-white">
-              ← Zpět na přihlášení
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <Container>
-        <div className="mx-auto max-w-md py-10">
+    <main className="min-h-screen overflow-x-hidden bg-white text-zinc-900">
+      <div className="mx-auto w-full max-w-[1800px] px-4 sm:px-6">
+        <div className="mx-auto w-full max-w-md py-12 sm:py-16">
           <div className="mb-6 text-center">
-            <H1>Obnovení hesla</H1>
-            <p className="mt-2 text-sm text-zinc-400">
-              Zadejte e-mailovou adresu a pošleme vám odkaz pro nastavení nového hesla.
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
+              Obnovení hesla
+            </h1>
+            <p className="mt-2 text-sm text-zinc-500">
+              Zadejte e-mail a pošleme vám odkaz pro nové heslo.
             </p>
           </div>
 
           {msg && (
-            <div className="mb-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-5 py-4 text-sm text-emerald-100">
+            <div className="mb-4 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
               {msg}
             </div>
           )}
 
           {err && (
-            <div className="mb-4 rounded-2xl border border-red-400/25 bg-red-400/10 px-5 py-4 text-sm text-red-100">
+            <div className="mb-4 rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-sm text-red-600">
               {err}
             </div>
           )}
 
-          <Card>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
             <form onSubmit={onSubmit} className="grid gap-3">
-              <Input
+              <input
                 placeholder="Email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                className="h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-black"
               />
 
-              <Button type="submit" disabled={loading}>
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex h-12 items-center justify-center rounded-2xl bg-black px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60"
+              >
                 {loading ? "Odesílám…" : "Poslat odkaz"}
-              </Button>
+              </button>
             </form>
-          </Card>
+          </div>
         </div>
-      </Container>
+      </div>
     </main>
   );
 }

@@ -4,7 +4,6 @@ import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type Demand = "SMALL" | "MEDIUM" | "LARGE";
 type Step = "FORM" | "VERIFY";
 
 export default function RegisterClient() {
@@ -44,7 +43,6 @@ export default function RegisterClient() {
   const [invoiceCity, setInvoiceCity] = useState("");
   const [invoiceZip, setInvoiceZip] = useState("");
 
-  const [demandLevel, setDemandLevel] = useState<Demand>("SMALL");
   const [consent, setConsent] = useState(false);
 
   const [code, setCode] = useState("");
@@ -52,9 +50,7 @@ export default function RegisterClient() {
 
   useEffect(() => {
     setStep(verifyParam === "1" ? "VERIFY" : "FORM");
-    if (emailParam) {
-      setEmail(emailParam);
-    }
+    if (emailParam) setEmail(emailParam);
   }, [verifyParam, emailParam]);
 
   const isValid = useMemo(() => {
@@ -148,7 +144,6 @@ export default function RegisterClient() {
           invoiceCity: sameInvoiceAddress ? city : invoiceCity,
           invoiceZip: sameInvoiceAddress ? zip : invoiceZip,
 
-          demandLevel,
           consent,
         }),
       });
@@ -241,20 +236,15 @@ export default function RegisterClient() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(1200px_circle_at_10%_0%,rgba(255,255,255,0.06),transparent_55%),radial-gradient(900px_circle_at_90%_10%,rgba(255,255,255,0.05),transparent_50%),radial-gradient(700px_circle_at_50%_120%,rgba(255,255,255,0.04),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.6))]" />
-      </div>
-
-      <div className="mx-auto max-w-3xl px-4 py-12">
+    <main className="min-h-screen overflow-x-hidden bg-white text-zinc-900">
+      <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-12">
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Registrace</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Registrace</h1>
 
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-zinc-500">
               Už máte účet?{" "}
-              <Link className="underline hover:text-white" href="/login">
+              <Link className="underline transition hover:text-black" href="/login">
                 Přihlásit se
               </Link>
             </p>
@@ -264,12 +254,12 @@ export default function RegisterClient() {
         {(err || ok) && (
           <div className="mb-6 grid gap-3">
             {err && (
-              <div className="rounded-2xl border border-red-400/25 bg-red-400/10 px-5 py-4 text-sm text-red-100">
+              <div className="rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-sm text-red-600">
                 {err}
               </div>
             )}
             {ok && (
-              <div className="rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-5 py-4 text-sm text-emerald-100">
+              <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
                 {ok}
               </div>
             )}
@@ -278,29 +268,29 @@ export default function RegisterClient() {
 
         {step === "VERIFY" ? (
           <form onSubmit={verifyEmail} className="grid gap-6">
-            <section className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
-              <div className="text-lg font-semibold">Potvrzení e-mailu</div>
-              <div className="mt-2 text-sm text-zinc-400">
+            <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <div className="text-lg font-semibold text-zinc-900">Potvrzení e-mailu</div>
+              <div className="mt-2 text-sm text-zinc-500">
                 Na e-mail{" "}
-                <span className="font-semibold text-zinc-200">{normalizeEmail(email)}</span> jsme
+                <span className="font-semibold text-zinc-900">{normalizeEmail(email)}</span> jsme
                 poslali ověřovací kód.
               </div>
 
               <div className="mt-5">
-                <label className="text-sm font-semibold text-zinc-300">Ověřovací kód</label>
+                <label className="text-sm font-semibold text-zinc-700">Ověřovací kód</label>
                 <input
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   placeholder="Např. 123456"
-                  className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                  className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
 
               <button
                 disabled={loading}
-                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-white px-6 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 disabled:opacity-60"
+                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-black px-6 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60"
               >
                 {loading ? "Ověřuji..." : "Potvrdit e-mail"}
               </button>
@@ -310,7 +300,7 @@ export default function RegisterClient() {
                   type="button"
                   onClick={resendCode}
                   disabled={resendLoading}
-                  className="text-sm font-semibold text-zinc-200 underline hover:text-white disabled:opacity-60"
+                  className="text-sm font-semibold text-zinc-600 underline transition hover:text-black disabled:opacity-60"
                 >
                   {resendLoading ? "Odesílám..." : "Poslat kód znovu"}
                 </button>
@@ -323,7 +313,7 @@ export default function RegisterClient() {
                     setCode("");
                     router.push("/register");
                   }}
-                  className="text-sm font-semibold text-zinc-300 hover:text-white"
+                  className="text-sm font-semibold text-zinc-600 transition hover:text-black"
                 >
                   Změnit e-mail
                 </button>
@@ -332,40 +322,40 @@ export default function RegisterClient() {
           </form>
         ) : (
           <form onSubmit={onSubmit} className="grid gap-6">
-            <section className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
-              <div className="text-lg font-semibold">Vyplňte přihlašovací údaje</div>
+            <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <div className="text-lg font-semibold text-zinc-900">Vyplňte přihlašovací údaje</div>
 
               <div className="mt-4 grid gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">E-mailová adresa</label>
+                  <label className="text-sm font-semibold text-zinc-700">E-mailová adresa</label>
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     type="email"
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">Heslo</label>
+                  <label className="text-sm font-semibold text-zinc-700">Heslo</label>
                   <input
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     type="password"
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                   <div className="mt-2 text-xs text-zinc-500">Min. 6 znaků.</div>
                 </div>
               </div>
             </section>
 
-            <section className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
-              <div className="text-lg font-semibold">Kontaktní údaje</div>
+            <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <div className="text-lg font-semibold text-zinc-900">Kontaktní údaje</div>
 
               <div className="mt-4">
-                <div className="text-sm font-semibold text-zinc-300">Nakupuji jako:</div>
+                <div className="text-sm font-semibold text-zinc-700">Nakupuji jako:</div>
                 <div className="mt-2 flex flex-wrap gap-3">
-                  <label className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-sm font-semibold text-zinc-200">
+                  <label className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900">
                     <input
                       type="radio"
                       name="buyer"
@@ -375,7 +365,7 @@ export default function RegisterClient() {
                     Soukromá osoba
                   </label>
 
-                  <label className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-sm font-semibold text-zinc-200">
+                  <label className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900">
                     <input
                       type="radio"
                       name="buyer"
@@ -389,70 +379,70 @@ export default function RegisterClient() {
 
               {isCompany && (
                 <div className="mt-4">
-                  <label className="text-sm font-semibold text-zinc-300">Název firmy</label>
+                  <label className="text-sm font-semibold text-zinc-700">Název firmy</label>
                   <input
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
               )}
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">Jméno</label>
+                  <label className="text-sm font-semibold text-zinc-700">Jméno</label>
                   <input
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">Příjmení</label>
+                  <label className="text-sm font-semibold text-zinc-700">Příjmení</label>
                   <input
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">Telefonní číslo</label>
+                  <label className="text-sm font-semibold text-zinc-700">Telefonní číslo</label>
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
-				
-				<div>
-  <label className="text-sm font-semibold text-zinc-300">Emailová adresa</label>
-  <input
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-    type="email"
-    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-  />
-</div>
+
+                <div>
+                  <label className="text-sm font-semibold text-zinc-700">Emailová adresa</label>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    type="email"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
 
                 {isCompany && (
                   <>
                     <div>
-                      <label className="text-sm font-semibold text-zinc-300">IČO</label>
+                      <label className="text-sm font-semibold text-zinc-700">IČO</label>
                       <input
                         value={ico}
                         onChange={(e) => setIco(e.target.value)}
-                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-zinc-300">DIČ (nepovinné)</label>
+                      <label className="text-sm font-semibold text-zinc-700">DIČ (nepovinné)</label>
                       <input
                         value={dic}
                         onChange={(e) => setDic(e.target.value)}
-                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                       />
                     </div>
                   </>
@@ -460,48 +450,48 @@ export default function RegisterClient() {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
-              <div className="text-lg font-semibold">Kontaktní adresa</div>
+            <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <div className="text-lg font-semibold text-zinc-900">Kontaktní adresa</div>
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">Ulice</label>
+                  <label className="text-sm font-semibold text-zinc-700">Ulice</label>
                   <input
                     value={street}
                     onChange={(e) => setStreet(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">Číslo popisné</label>
+                  <label className="text-sm font-semibold text-zinc-700">Číslo popisné</label>
                   <input
                     value={houseNumber}
                     onChange={(e) => setHouseNumber(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">Město</label>
+                  <label className="text-sm font-semibold text-zinc-700">Město</label>
                   <input
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-zinc-300">PSČ</label>
+                  <label className="text-sm font-semibold text-zinc-700">PSČ</label>
                   <input
                     value={zip}
                     onChange={(e) => setZip(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                    className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                   />
                 </div>
               </div>
 
-              <label className="mt-5 flex items-center gap-3 text-sm font-semibold text-zinc-300">
+              <label className="mt-5 flex items-center gap-3 text-sm font-semibold text-zinc-700">
                 <input
                   type="checkbox"
                   checked={sameInvoiceAddress}
@@ -512,42 +502,42 @@ export default function RegisterClient() {
 
               {!sameInvoiceAddress && (
                 <div className="mt-6">
-                  <div className="text-lg font-semibold">Fakturační adresa</div>
+                  <div className="text-lg font-semibold text-zinc-900">Fakturační adresa</div>
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="text-sm font-semibold text-zinc-300">Ulice</label>
+                      <label className="text-sm font-semibold text-zinc-700">Ulice</label>
                       <input
                         value={invoiceStreet}
                         onChange={(e) => setInvoiceStreet(e.target.value)}
-                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100"
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-zinc-300">Číslo popisné</label>
+                      <label className="text-sm font-semibold text-zinc-700">Číslo popisné</label>
                       <input
                         value={invoiceHouseNumber}
                         onChange={(e) => setInvoiceHouseNumber(e.target.value)}
-                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100"
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-zinc-300">Město</label>
+                      <label className="text-sm font-semibold text-zinc-700">Město</label>
                       <input
                         value={invoiceCity}
                         onChange={(e) => setInvoiceCity(e.target.value)}
-                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100"
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-zinc-300">PSČ</label>
+                      <label className="text-sm font-semibold text-zinc-700">PSČ</label>
                       <input
                         value={invoiceZip}
                         onChange={(e) => setInvoiceZip(e.target.value)}
-                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 px-4 text-sm text-zinc-100"
+                        className="mt-2 h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-black"
                       />
                     </div>
                   </div>
@@ -555,55 +545,7 @@ export default function RegisterClient() {
               )}
             </section>
 
-            <section className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
-              <div className="text-lg font-semibold">Odhadovaný odběr:</div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <label className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="demand"
-                    checked={demandLevel === "SMALL"}
-                    onChange={() => setDemandLevel("SMALL")}
-                    className="peer hidden"
-                  />
-                  <div className="flex h-20 flex-col items-center justify-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-center transition peer-checked:border-emerald-400 peer-checked:bg-emerald-400/10">
-                    <span className="text-sm font-semibold text-zinc-200">Malý</span>
-                    <span className="text-xs text-zinc-400">základní nabídka</span>
-                  </div>
-                </label>
-
-                <label className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="demand"
-                    checked={demandLevel === "MEDIUM"}
-                    onChange={() => setDemandLevel("MEDIUM")}
-                    className="peer hidden"
-                  />
-                  <div className="flex h-20 flex-col items-center justify-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-center transition peer-checked:border-emerald-400 peer-checked:bg-emerald-400/10">
-                    <span className="text-sm font-semibold text-zinc-200">Střední</span>
-                    <span className="text-xs text-zinc-400">pravidelné objednávky</span>
-                  </div>
-                </label>
-
-                <label className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="demand"
-                    checked={demandLevel === "LARGE"}
-                    onChange={() => setDemandLevel("LARGE")}
-                    className="peer hidden"
-                  />
-                  <div className="flex h-20 flex-col items-center justify-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-center transition peer-checked:border-emerald-400 peer-checked:bg-emerald-400/10">
-                    <span className="text-sm font-semibold text-zinc-200">Velký</span>
-                    <span className="text-xs text-zinc-400">velkoobchodní odběr</span>
-                  </div>
-                </label>
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-zinc-900 bg-zinc-900/30 p-6">
+            <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
               <label className="flex items-start gap-3">
                 <input
                   type="checkbox"
@@ -611,7 +553,7 @@ export default function RegisterClient() {
                   onChange={(e) => setConsent(e.target.checked)}
                   className="mt-1"
                 />
-                <span className="text-sm text-zinc-200">
+                <span className="text-sm text-zinc-700">
                   Potvrzuji, že údaje jsou pravdivé a souhlasím se zpracováním pro účely
                   vyřízení poptávky.
                 </span>
@@ -619,14 +561,13 @@ export default function RegisterClient() {
 
               <button
                 disabled={loading}
-                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-white px-6 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 disabled:opacity-60"
+                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-black px-6 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60"
               >
                 {loading ? "Odesílám..." : "Vytvořit účet"}
               </button>
 
               <div className="mt-3 text-xs text-zinc-500">
-                Střední a Velký odběr se po registraci zařadí do schválení administrátorem. Po
-                vytvoření účtu bude potřeba potvrdit e-mail kódem.
+                Po vytvoření účtu bude potřeba potvrdit e-mail kódem.
               </div>
             </section>
           </form>

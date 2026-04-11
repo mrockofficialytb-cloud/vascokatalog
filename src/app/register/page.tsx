@@ -1,10 +1,14 @@
 import { Suspense } from "react";
+import Header from "@/components/Header";
 import RegisterClient from "./RegisterClient";
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
-      <RegisterClient />
-    </Suspense>
+    <>
+      <Header />
+      <Suspense fallback={<div className="min-h-screen bg-white" />}>
+        <RegisterClient />
+      </Suspense>
+    </>
   );
 }

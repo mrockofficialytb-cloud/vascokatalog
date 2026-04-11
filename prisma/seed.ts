@@ -9,70 +9,135 @@ type PriceSeed = {
 type ProductSeed = {
   sku: string;
   slug: string;
-  collection: ProductCollection; // ✅ enum, ne string
+  collection: ProductCollection;
   name: string;
-  description?: string;
+  description?: string | null;
   imageUrl?: string;
   prices: PriceSeed[];
 };
 
 const PRODUCTS: ProductSeed[] = [
   {
-    sku: "LAM-001",
-    slug: "classic-lamelovy-panel-1000",
+    sku: "LAM-CLASSIC",
+    slug: "classic-lamelovy-panel",
     collection: ProductCollection.CLASSIC,
-    name: "Lamelový panel 1000 mm",
-    description: "Ukázkový produkt",
+    name: "Lamelové panely CLASSIC",
     imageUrl: "/products/lam-001.jpeg",
     prices: [
-      { customerType: "B2C", amountCzk: 19900 },
-      { customerType: "B2B_SMALL", amountCzk: 17900 },
-      { customerType: "B2B_BIG", amountCzk: 14900 }
-    ]
+      { customerType: "B2C", amountCzk: 78500 },
+      { customerType: "B2B_SMALL", amountCzk: 78500 },
+      { customerType: "B2B_BIG", amountCzk: 78500 },
+    ],
   },
   {
-    sku: "LAM-002",
-    slug: "premium-lamelovy-panel-2000",
+    sku: "LAM-PREMIUM",
+    slug: "premium-lamelovy-panel",
     collection: ProductCollection.PREMIUM,
-    name: "Lamelový panel 2000 mm",
-    description: "Druhý ukázkový produkt",
-    imageUrl: "/products/lam-002.jpeg",
+    name: "Lamelové panely PREMIUM",
+    imageUrl: "/products/premium/premium-zlata.jpg",
     prices: [
-      { customerType: "B2C", amountCzk: 34900 },
-      { customerType: "B2B_SMALL", amountCzk: 31900 },
-      { customerType: "B2B_BIG", amountCzk: 27900 }
-    ]
+      { customerType: "B2C", amountCzk: 100000 },
+      { customerType: "B2B_SMALL", amountCzk: 100000 },
+      { customerType: "B2B_BIG", amountCzk: 100000 },
+    ],
   },
   {
-    sku: "LAM-003",
-    slug: "spazio-lamelovy-panel-2400",
+    sku: "LAM-SPAZIO",
+    slug: "spazio-lamelovy-panel",
     collection: ProductCollection.SPAZIO,
-    name: "Lamelový panel 2400 mm",
-    description: "Delší varianta",
-    imageUrl: "/products/lam-003.jpeg",
+    name: "Lamelové panely SPAZIO",
+    imageUrl: "/products/spazio/spazio-antracit.jpg",
     prices: [
-      { customerType: "B2C", amountCzk: 39900 },
-      { customerType: "B2B_SMALL", amountCzk: 36900 },
-      { customerType: "B2B_BIG", amountCzk: 32900 }
-    ]
+      { customerType: "B2C", amountCzk: 63000 },
+      { customerType: "B2B_SMALL", amountCzk: 63000 },
+      { customerType: "B2B_BIG", amountCzk: 63000 },
+    ],
   },
   {
-    sku: "LAM-004",
-    slug: "modullo-lamelovy-panel-3000",
+    sku: "LAM-MODULLO",
+    slug: "modullo-lamelovy-panel",
     collection: ProductCollection.MODULLO,
-    name: "Lamelový panel 3000 mm",
-    description: "Maxi varianta",
-    imageUrl: "/products/lam-004.jpeg",
+    name: "Lamelové panely MODULLO",
+    imageUrl: "/products/modullo/modullo-medovydub-bila.jpg",
     prices: [
-      { customerType: "B2C", amountCzk: 45900 },
-      { customerType: "B2B_SMALL", amountCzk: 42900 },
-      { customerType: "B2B_BIG", amountCzk: 38900 }
-    ]
-  }
+      { customerType: "B2C", amountCzk: 78000 },
+      { customerType: "B2B_SMALL", amountCzk: 78000 },
+      { customerType: "B2B_BIG", amountCzk: 78000 },
+    ],
+  },
+
+  {
+    sku: "RIFFCELLO-SET-STD",
+    slug: "riffcello-sestava-standard",
+    collection: ProductCollection.RIFFCELLO,
+    name: "Panely RIFFCELLO",
+    description: "Sestava 2 kusů",
+    imageUrl: "/products/riffcello/riffcello-oakviking.jpg",
+    prices: [
+      { customerType: "B2C", amountCzk: 83500 },
+      { customerType: "B2B_SMALL", amountCzk: 83500 },
+      { customerType: "B2B_BIG", amountCzk: 83500 },
+    ],
+  },
+  {
+    sku: "RIFFCELLO-SET-PREMIUM",
+    slug: "riffcello-sestava-premium",
+    collection: ProductCollection.RIFFCELLO,
+    name: "Panely RIFFCELLO PREMIUM",
+    description: "Sestava 2 kusů PREMIUM",
+    imageUrl: "/products/riffcello/riffcello-cernybeton.jpg",
+    prices: [
+      { customerType: "B2C", amountCzk: 99400 },
+      { customerType: "B2B_SMALL", amountCzk: 99400 },
+      { customerType: "B2B_BIG", amountCzk: 99400 },
+    ],
+  },
+  {
+    sku: "RIFFCELLO-LISTY-STD",
+    slug: "riffcello-doplnkove-listy-standard",
+    collection: ProductCollection.RIFFCELLO,
+    name: "Lišty RIFFCELLO",
+    description: "Doplňkové lišty",
+    imageUrl: "/products/riffcello/listy/riffcello-oaknatural.jpg",
+    prices: [
+      { customerType: "B2C", amountCzk: 51900 },
+      { customerType: "B2B_SMALL", amountCzk: 51900 },
+      { customerType: "B2B_BIG", amountCzk: 51900 },
+    ],
+  },
+  {
+    sku: "RIFFCELLO-LISTY-PREMIUM",
+    slug: "riffcello-doplnkove-listy-premium",
+    collection: ProductCollection.RIFFCELLO,
+    name: "Lišty RIFFCELLO",
+    description: "Doplňkové lišty PREMIUM",
+    imageUrl: "/products/riffcello/listy/riffcello-cernybeton.jpg",
+    prices: [
+      { customerType: "B2C", amountCzk: 68800 },
+      { customerType: "B2B_SMALL", amountCzk: 68800 },
+      { customerType: "B2B_BIG", amountCzk: 68800 },
+    ],
+  },
 ];
 
 async function main() {
+  const activeSkus = PRODUCTS.map((p) => p.sku);
+
+  await prisma.product.updateMany({
+    where: {
+      sku: { notIn: activeSkus },
+    },
+    data: {
+      isActive: false,
+    },
+  });
+
   for (const p of PRODUCTS) {
+    const existing = await prisma.product.findUnique({
+      where: { sku: p.sku },
+      select: { id: true, description: true },
+    });
+
     const product = await prisma.product.upsert({
       where: { sku: p.sku },
       create: {
@@ -82,30 +147,35 @@ async function main() {
         name: p.name,
         description: p.description ?? null,
         imageUrl: p.imageUrl ?? null,
-        isActive: true
+        isActive: true,
       },
       update: {
         slug: p.slug,
         collection: p.collection,
         name: p.name,
-        description: p.description ?? null,
         imageUrl: p.imageUrl ?? null,
-        isActive: true
+        isActive: true,
+        ...(existing?.description == null
+          ? { description: p.description ?? null }
+          : {}),
       },
-      select: { id: true }
+      select: { id: true },
     });
 
-    await prisma.price.deleteMany({ where: { productId: product.id } });
+    await prisma.price.deleteMany({
+      where: { productId: product.id },
+    });
+
     await prisma.price.createMany({
       data: p.prices.map((pr) => ({
         productId: product.id,
         customerType: pr.customerType,
-        amountCzk: pr.amountCzk
-      }))
+        amountCzk: pr.amountCzk,
+      })),
     });
   }
 
-  console.log(`Seed OK (${PRODUCTS.length} produktů)`);
+  console.log(`Seed OK (${PRODUCTS.length} aktivních produktů)`);
 }
 
 main()

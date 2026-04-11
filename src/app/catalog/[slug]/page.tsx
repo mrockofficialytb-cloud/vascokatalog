@@ -3,14 +3,16 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { cookies } from "next/headers";
 import { isAdminEmail } from "@/lib/admin";
 import ProductDetailClient from "./ProductDetailClient";
 
 function formatCzk(amountCzk: number | null | undefined) {
-  if (amountCzk == null) return "—";
+  if (amountCzk == null) return "";
   const val = amountCzk / 100;
-  return new Intl.NumberFormat("cs-CZ", { style: "currency", currency: "CZK" }).format(val);
+  return new Intl.NumberFormat("cs-CZ", {
+    style: "currency",
+    currency: "CZK",
+  }).format(val);
 }
 
 function customerTypeCz(type?: string) {
@@ -34,58 +36,317 @@ function getInitials(name?: string | null) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-type Decor = { id: string; label: string; swatchUrl: string };
+type Decor = {
+  id: string;
+  label: string;
+  swatchUrl: string;
+  imageUrl: string;
+};
 
 const DECORS_BY_COLLECTION: Record<string, Decor[]> = {
   CLASSIC: [
-    { id: "bila", label: "Bílá", swatchUrl: "/products/decors/bila.jpeg" },
-    { id: "dubwindsor", label: "Dub Windsor", swatchUrl: "/products/decors/dubwindsor.jpeg" },
-    { id: "buk", label: "Buk", swatchUrl: "/products/decors/buk.jpeg" },
-    { id: "dubsanta", label: "Dub Santa", swatchUrl: "/products/decors/dubsanta.jpeg" },
-    { id: "granit", label: "Granit", swatchUrl: "/products/decors/granit.jpeg" },
-    { id: "beton", label: "Beton", swatchUrl: "/products/decors/beton.jpeg" },
-    { id: "cerna", label: "Černá", swatchUrl: "/products/decors/cerna.jpeg" },
+    {
+      id: "bila",
+      label: "Bílá",
+      swatchUrl: "/products/decors/bila.jpeg",
+      imageUrl: "/products/classic/classic-bila-v2.jpg",
+    },
+    {
+      id: "dubwindsor",
+      label: "Dub Windsor",
+      swatchUrl: "/products/decors/dubwindsor.jpeg",
+      imageUrl: "/products/classic/classic-dubwindsor.jpg",
+    },
+    {
+      id: "buk",
+      label: "Buk",
+      swatchUrl: "/products/decors/buk.jpeg",
+      imageUrl: "/products/classic/classic-buk.jpg",
+    },
+    {
+      id: "dubsanta",
+      label: "Dub Santa",
+      swatchUrl: "/products/decors/dubsanta.jpeg",
+      imageUrl: "/products/classic/classic-dubsanta.jpg",
+    },
+    {
+      id: "granit",
+      label: "Granit",
+      swatchUrl: "/products/decors/granit.jpeg",
+      imageUrl: "/products/classic/classic-granit.jpg",
+    },
+    {
+      id: "beton",
+      label: "Beton",
+      swatchUrl: "/products/decors/beton.jpeg",
+      imageUrl: "/products/classic/classic-beton.jpg",
+    },
+    {
+      id: "cerna",
+      label: "Černá",
+      swatchUrl: "/products/decors/cerna.jpeg",
+      imageUrl: "/products/classic/classic-cerna-v2.jpg",
+    },
   ],
 
   PREMIUM: [
-    { id: "stribrna", label: "Broušená stříbrná", swatchUrl: "/products/decors/brushedsilver.jpeg" },
-    { id: "zlata", label: "Královsky zlatá", swatchUrl: "/products/decors/royalgold.jpeg" },
-    { id: "bronzova", label: "Antická bronzová", swatchUrl: "/products/decors/antiquebronze.jpeg" },
+    {
+      id: "stribrna",
+      label: "Broušená stříbrná",
+      swatchUrl: "/products/decors/brushedsilver.jpeg",
+      imageUrl: "/products/premium/premium-stribrna.jpg",
+    },
+    {
+      id: "zlata",
+      label: "Královsky zlatá",
+      swatchUrl: "/products/decors/royalgold.jpeg",
+      imageUrl: "/products/premium/premium-zlata.jpg",
+    },
+    {
+      id: "bronzova",
+      label: "Antická bronzová",
+      swatchUrl: "/products/decors/antiquebronze.jpeg",
+      imageUrl: "/products/premium/premium-bronzova.jpg",
+    },
   ],
 
   SPAZIO: [
-    { id: "kasmir", label: "Kašmír", swatchUrl: "/products/decors/kasmir.jpeg" },
-    { id: "bilyratan", label: "Bílý ratan", swatchUrl: "/products/decors/bilyratan.jpeg" },
-    { id: "seda", label: "Šedý", swatchUrl: "/products/decors/seda.jpeg" },
-    { id: "dubsonoma", label: "Dub Sonoma", swatchUrl: "/products/decors/dubsonoma.jpeg" },
-    { id: "dubartisan", label: "Dub Artisan", swatchUrl: "/products/decors/dubartisan.jpeg" },
-    { id: "medovydub", label: "Medový dub", swatchUrl: "/products/decors/medovydub.jpeg" },
-    { id: "dubwotan", label: "Dub Wotan", swatchUrl: "/products/decors/dubwotan.jpeg" },
-    { id: "svetlyorech", label: "Světlý ořech", swatchUrl: "/products/decors/svetlyorech.jpeg" },
-    { id: "tmavyorech", label: "Tmavý ořech", swatchUrl: "/products/decors/tmavyorech.jpeg" },
-    { id: "kamen", label: "Kámen", swatchUrl: "/products/decors/kamen.jpeg" },
-    { id: "olivovezelena", label: "Olivově zelená", swatchUrl: "/products/decors/olivovezelena.jpeg" },
-    { id: "lahvovezelena", label: "Lahvově zelená", swatchUrl: "/products/decors/lahvovezelena.jpeg" },
-    { id: "antracit", label: "Antracit", swatchUrl: "/products/decors/antracit.jpeg" },
+    {
+      id: "kasmir",
+      label: "Kašmír",
+      swatchUrl: "/products/decors/kasmir.jpeg",
+      imageUrl: "/products/spazio/spazio-kasmir.jpg",
+    },
+    {
+      id: "bilyratan",
+      label: "Bílý ratan",
+      swatchUrl: "/products/decors/bilyratan.jpeg",
+      imageUrl: "/products/spazio/spazio-bilyratan.jpg",
+    },
+    {
+      id: "seda",
+      label: "Šedý",
+      swatchUrl: "/products/decors/seda.jpeg",
+      imageUrl: "/products/spazio/spazio-sedy.jpg",
+    },
+    {
+      id: "dubsonoma",
+      label: "Dub Sonoma",
+      swatchUrl: "/products/decors/dubsonoma.jpeg",
+      imageUrl: "/products/spazio/spazio-dubsonoma.jpg",
+    },
+    {
+      id: "dubartisan",
+      label: "Dub Artisan",
+      swatchUrl: "/products/decors/dubartisan.jpeg",
+      imageUrl: "/products/spazio/spazio-dubartisan.jpg",
+    },
+    {
+      id: "medovydub",
+      label: "Medový dub",
+      swatchUrl: "/products/decors/medovydub.jpeg",
+      imageUrl: "/products/spazio/spazio-medovydub.jpg",
+    },
+    {
+      id: "dubwotan",
+      label: "Dub Wotan",
+      swatchUrl: "/products/decors/dubwotan.jpeg",
+      imageUrl: "/products/spazio/spazio-dubwotan.jpg",
+    },
+    {
+      id: "svetlyorech",
+      label: "Světlý ořech",
+      swatchUrl: "/products/decors/svetlyorech.jpeg",
+      imageUrl: "/products/spazio/spazio-svetlyorech.jpg",
+    },
+    {
+      id: "tmavyorech",
+      label: "Tmavý ořech",
+      swatchUrl: "/products/decors/tmavyorech.jpeg",
+      imageUrl: "/products/spazio/spazio-tmavyorech.jpg",
+    },
+    {
+      id: "olivovezelena",
+      label: "Olivově zelená",
+      swatchUrl: "/products/decors/olivovezelena.jpeg",
+      imageUrl: "/products/spazio/spazio-olivovezelena.jpg",
+    },
+    {
+      id: "lahvovezelena",
+      label: "Lahvově zelená",
+      swatchUrl: "/products/decors/lahvovezelena.jpeg",
+      imageUrl: "/products/spazio/spazio-lahvovezelena.jpg",
+    },
+    {
+      id: "antracit",
+      label: "Antracit",
+      swatchUrl: "/products/decors/antracit.jpeg",
+      imageUrl: "/products/spazio/spazio-antracit.jpg",
+    },
   ],
 
   MODULLO: [
-    { id: "bila", label: "Bílá", swatchUrl: "/products/decors/bilabila.jpeg" },
-    { id: "medovydub_bila", label: "Medový dub", swatchUrl: "/products/decors/medovydubbila.jpeg" },
-    { id: "dubwotan_bila", label: "Dub Wotan", swatchUrl: "/products/decors/dubwotanbila.jpeg" },
-    { id: "tmavyorech_bila", label: "Tmavý ořech", swatchUrl: "/products/decors/tmavyorechbila.jpeg" },
-    { id: "dubwindsor_cerny", label: "Dub Windsor", swatchUrl: "/products/decors/dubwindsorcerny.jpeg" },
-    { id: "medovydub_cerny", label: "Medový dub", swatchUrl: "/products/decors/medovydubcerny.jpeg" },
-    { id: "cerna", label: "Černá", swatchUrl: "/products/decors/cernacerna.jpeg" },
+    {
+      id: "bila",
+      label: "Bílá",
+      swatchUrl: "/products/decors/bilabila.jpeg",
+      imageUrl: "/products/modullo/modullo-bila-v2.jpg",
+    },
+    {
+      id: "medovydub_bila",
+      label: "Medový dub",
+      swatchUrl: "/products/decors/medovydubbila.jpeg",
+      imageUrl: "/products/modullo/modullo-medovydub-bila.jpg",
+    },
+    {
+      id: "dubwotan_bila",
+      label: "Dub Wotan",
+      swatchUrl: "/products/decors/dubwotanbila.jpeg",
+      imageUrl: "/products/modullo/modullo-dubwotan-bila.jpg",
+    },
+    {
+      id: "tmavyorech_bila",
+      label: "Tmavý ořech",
+      swatchUrl: "/products/decors/tmavyorechbila.jpeg",
+      imageUrl: "/products/modullo/modullo-tmavyorech-bila.jpg",
+    },
+    {
+      id: "dubwindsor_cerny",
+      label: "Dub Windsor",
+      swatchUrl: "/products/decors/dubwindsorcerny.jpeg",
+      imageUrl: "/products/modullo/modullo-dubwindsor-cerny.jpg",
+    },
+    {
+      id: "medovydub_cerny",
+      label: "Medový dub",
+      swatchUrl: "/products/decors/medovydubcerny.jpeg",
+      imageUrl: "/products/modullo/modullo-medovydub-cerny.jpg",
+    },
+    {
+      id: "cerna",
+      label: "Černá",
+      swatchUrl: "/products/decors/cernacerna.jpeg",
+      imageUrl: "/products/modullo/modullo-cerna.jpg",
+    },
   ],
 
   RIFFCELLO: [
-    { id: "oakviking", label: "Dub Viking", swatchUrl: "/products/decors/dubviking.jpeg" },
-    { id: "oaknatural", label: "Dub přírodní", swatchUrl: "/products/decors/dubprirodni.jpeg" },
-    { id: "tyk", label: "Týk", swatchUrl: "/products/decors/tyk.jpeg" },
-    { id: "med", label: "Měď", swatchUrl: "/products/decors/med.jpeg" },
-    { id: "cernybeton", label: "Černý beton", swatchUrl: "/products/decors/cernybeton.jpeg" },
-    { id: "cernymat", label: "Černý mat", swatchUrl: "/products/decors/cernymat.jpeg" },
+    {
+      id: "oakviking",
+      label: "Dub Viking",
+      swatchUrl: "/products/decors/dubviking.jpeg",
+      imageUrl: "/products/riffcello/riffcello-oakviking.jpg",
+    },
+    {
+      id: "oaknatural",
+      label: "Dub přírodní",
+      swatchUrl: "/products/decors/dubprirodni.jpeg",
+      imageUrl: "/products/riffcello/riffcello-oaknatural.jpg",
+    },
+    {
+      id: "tyk",
+      label: "Týk",
+      swatchUrl: "/products/decors/tyk.jpeg",
+      imageUrl: "/products/riffcello/riffcello-tyk.jpg",
+    },
+    {
+      id: "med",
+      label: "Měď",
+      swatchUrl: "/products/decors/med.jpeg",
+      imageUrl: "/products/riffcello/riffcello-med.jpg",
+    },
+    {
+      id: "cernybeton",
+      label: "Černý beton",
+      swatchUrl: "/products/decors/cernybeton.jpeg",
+      imageUrl: "/products/riffcello/riffcello-cernybeton.jpg",
+    },
+    {
+      id: "cernymat",
+      label: "Černý mat",
+      swatchUrl: "/products/decors/cernymat.jpeg",
+      imageUrl: "/products/riffcello/riffcello-cernymat.jpg",
+    },
+  ],
+};
+
+const RIFFCELLO_DECORS_BY_SLUG: Record<string, Decor[]> = {
+  "riffcello-sestava-standard": [
+    {
+      id: "dub",
+      label: "Dub Viking",
+      swatchUrl: "/products/decors/dubviking.jpeg",
+      imageUrl: "/products/riffcello/riffcello-oakviking.jpg",
+    },
+    {
+      id: "oak",
+      label: "Dub přírodní",
+      swatchUrl: "/products/decors/dubprirodni.jpeg",
+      imageUrl: "/products/riffcello/riffcello-oaknatural.jpg",
+    },
+    {
+      id: "teak540",
+      label: "Teak 540",
+      swatchUrl: "/products/decors/tyk.jpeg",
+      imageUrl: "/products/riffcello/riffcello-tyk.jpg",
+    },
+  ],
+
+  "riffcello-sestava-premium": [
+    {
+      id: "cooper345",
+      label: "Měď",
+      swatchUrl: "/products/decors/med.jpeg",
+      imageUrl: "/products/riffcello/no-image.png",
+    },
+    {
+      id: "black",
+      label: "Černý beton",
+      swatchUrl: "/products/decors/cernybeton.jpeg",
+      imageUrl: "/products/riffcello/riffcello-cernybeton.jpg",
+    },
+    {
+      id: "blackmatt",
+      label: "Černý mat",
+      swatchUrl: "/products/decors/cernacerna.jpeg",
+      imageUrl: "/products/riffcello/riffcello-cernymat.jpg",
+    },
+  ],
+
+  "riffcello-doplnkove-listy-standard": [
+    {
+      id: "dub",
+      label: "Dub Viking - lišta",
+      swatchUrl: "/products/decors/dubviking.jpeg",
+      imageUrl: "/products/riffcello/listy/riffcello-oakviking.jpg",
+    },
+    {
+      id: "oak",
+      label: "Dub přírodní - lišta",
+      swatchUrl: "/products/decors/dubprirodni.jpeg",
+      imageUrl: "/products/riffcello/listy/riffcello-oaknatural.jpg",
+    },
+    {
+      id: "teak540",
+      label: "Týk - lišta",
+      swatchUrl: "/products/decors/tyk.jpeg",
+      imageUrl: "/products/riffcello/listy/riffcello-tyk.jpg",
+    },
+  ],
+
+  "riffcello-doplnkove-listy-premium": [
+    {
+      id: "cooper",
+      label: "Měď - lišta",
+      swatchUrl: "/products/decors/med.jpeg",
+      imageUrl: "/products/riffcello/listy/no-image.png",
+    },
+    {
+      id: "black",
+      label: "Černá - lišta",
+      swatchUrl: "/products/decors/cernybeton.jpeg",
+      imageUrl: "/products/riffcello/listy/riffcello-cernybeton.jpg",
+    },
   ],
 };
 
@@ -133,22 +394,18 @@ export default async function ProductDetailPage({
       description: true,
       imageUrl: true,
       collection: true,
-      prices:
-        isLoggedIn && status === "ACTIVE" && customerType
-          ? {
-              where: { customerType },
-              select: { amountCzk: true, currency: true },
-              take: 1,
-            }
-          : false,
+      prices: {
+        select: { amountCzk: true, currency: true },
+        orderBy: { amountCzk: "asc" },
+        take: 1,
+      },
     },
   });
 
   if (!product) notFound();
 
-  const price = (product as any).prices?.[0]?.amountCzk ?? null;
+  const price = product.prices?.[0]?.amountCzk ?? null;
 
-  // Galerie – zatím 1 reálná + placeholdery
   const gallery = [
     product.imageUrl || "/products/placeholder.jpg",
     "/products/placeholder.jpg",
@@ -156,23 +413,23 @@ export default async function ProductDetailPage({
   ];
 
   const collection = (product.collection ?? "CLASSIC").toString().toUpperCase();
-  const decors = DECORS_BY_COLLECTION[collection] ?? DECORS_BY_COLLECTION.CLASSIC;
 
-  // Thumbs podle kolekce (max 8)
-  const decorThumbs = decors.map((d) => d.swatchUrl).slice(0, 8);
+  const decorsRaw =
+    collection === "RIFFCELLO"
+      ? RIFFCELLO_DECORS_BY_SLUG[product.slug] ?? []
+      : DECORS_BY_COLLECTION[collection] ?? DECORS_BY_COLLECTION.CLASSIC;
+
+  const decors = decorsRaw.map((d) => ({
+    ...d,
+    imageUrl: d.imageUrl || product.imageUrl || "/products/placeholder.jpg",
+  }));
+
+  const decorThumbs = decors.map((d) => d.swatchUrl);
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Background vibe */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(1200px_circle_at_10%_0%,rgba(255,255,255,0.06),transparent_55%),radial-gradient(900px_circle_at_90%_10%,rgba(255,255,255,0.05),transparent_50%),radial-gradient(700px_circle_at_50%_120%,rgba(255,255,255,0.04),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.0),rgba(0,0,0,0.6))]" />
-      </div>
-
-      {/* TOP BAR (stejné jako katalog) */}
-      <header className="sticky top-0 z-20 border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          {/* Left brand */}
+    <main className="min-h-screen bg-white text-zinc-900">
+      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-[1800px] items-center justify-between px-6 py-3">
           <Link href="/catalog" className="flex items-center">
             <Image
               src="/vascologo.png"
@@ -184,70 +441,71 @@ export default async function ProductDetailPage({
             />
           </Link>
 
-          {/* Right actions */}
           {!isLoggedIn ? (
             <div className="flex items-center gap-3">
-              <Link className="text-sm font-semibold text-zinc-200 hover:text-white" href="/login">
+              <Link
+                className="text-sm font-semibold text-zinc-700 transition hover:text-black"
+                href="/login"
+              >
                 Přihlásit
               </Link>
-              <span className="text-zinc-700">•</span>
-              <Link className="text-sm font-semibold text-zinc-200 hover:text-white" href="/register">
+              <span className="text-zinc-300">•</span>
+              <Link
+                className="inline-flex h-11 items-center justify-center rounded-2xl bg-black px-5 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                href="/register"
+              >
                 Registrovat
               </Link>
             </div>
           ) : (
             <div className="flex flex-1 items-center justify-end">
               <div className="flex items-center gap-3">
-                {/* Poptávka */}
                 <Link
                   href="/cart"
-                  className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-5 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
+                  className="inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
                 >
                   Poptávka
-                  <span className="rounded-full border border-zinc-800 bg-zinc-950/40 px-2 py-0.5 text-xs">
+                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs text-zinc-700">
                     {cartCount}
                   </span>
                 </Link>
 
-                {/* User box */}
-                <div className="hidden h-12 min-w-[320px] items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/60 px-4 sm:flex">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+                <div className="hidden h-12 min-w-[320px] items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 sm:flex">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
                     {getInitials(userName || email || "")}
                   </div>
 
                   <div className="flex flex-col leading-tight">
-                    <span className="whitespace-nowrap text-sm font-semibold text-zinc-100">
+                    <span className="whitespace-nowrap text-sm font-semibold text-zinc-900">
                       {primaryLabel}
                     </span>
 
                     {isAdmin ? (
-                      <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                      <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                         Administrátor
                       </span>
                     ) : (
-                      <span className="mt-1 text-xs font-semibold text-zinc-400">
+                      <span className="mt-1 text-xs font-semibold text-zinc-500">
                         {customerTypeCz(customerType)} • {statusCz(status)}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Odhlásit */}
                 <form action="/logout" method="post">
-                  <button className="h-12 rounded-2xl bg-white px-5 text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
+                  <button className="h-12 rounded-2xl bg-black px-5 text-sm font-semibold text-white transition hover:bg-zinc-800">
                     Odhlásit
                   </button>
                 </form>
 
-                {/* Admin */}
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="ml-6 inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-5 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
+                    className="ml-3 inline-flex h-12 items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
                   >
                     <svg
-                      className="h-5 w-5 text-zinc-400"
+                      className="h-5 w-5 text-zinc-500"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="1.8"
@@ -270,17 +528,16 @@ export default async function ProductDetailPage({
         </div>
       </header>
 
-      {/* CONTENT */}
-      <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mx-auto max-w-[1800px] px-6 py-10">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <div className="text-2xl font-semibold tracking-tight">{product.name}</div>
-            <div className="mt-1 text-sm text-zinc-400">Kolekce: {collection}</div>
+            <div className="text-2xl font-semibold tracking-tight text-zinc-900">{product.name}</div>
+            <div className="mt-1 text-sm text-zinc-500">Kolekce: {collection}</div>
           </div>
 
           <Link
             href="/catalog"
-            className="h-12 rounded-2xl border border-zinc-800 bg-zinc-950/40 px-5 text-sm font-semibold text-zinc-200 hover:bg-zinc-900 inline-flex items-center"
+            className="inline-flex h-12 items-center rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
           >
             Zpět do katalogu
           </Link>
@@ -293,14 +550,7 @@ export default async function ProductDetailPage({
             name: product.name,
             description: product.description ?? "",
             collection,
-            priceLabel:
-  price == null ? (
-    <span className="text-[15px] text-zinc-200">
-      Ceny se zobrazí po schválení účtu
-    </span>
-  ) : (
-    formatCzk(price)
-  ),
+            priceLabel: formatCzk(price),
             gallery,
             decorThumbs,
             decors,

@@ -35,39 +35,40 @@ export default async function CartPage() {
     },
   });
 
- const items = (cart?.items ?? []).map((it) => {
-  const price = status === "ACTIVE" ? (it.product.prices?.[0]?.amountCzk ?? null) : null;
-  const subtotal = price ? price * it.quantity : null;
+  const items = (cart?.items ?? []).map((it) => {
+    const price = status === "ACTIVE" ? (it.product.prices?.[0]?.amountCzk ?? null) : null;
+    const subtotal = price ? price * it.quantity : null;
 
-  return {
-    productId: it.productId,
-    name: it.product.name,
-    sku: it.product.sku,
-    quantity: it.quantity,
-    decor: (it as any).decor ?? null,
-    felt: (it as any).felt ?? null,
-    unitPriceCzk: price,
-    subtotalCzk: subtotal,
-  };
-});
+    return {
+      productId: it.productId,
+      name: it.product.name,
+      sku: it.product.sku,
+      quantity: it.quantity,
+      decor: (it as any).decor ?? null,
+      unitPriceCzk: price,
+      subtotalCzk: subtotal,
+    };
+  });
 
   const totalCzk = items.reduce((sum, i) => sum + (i.subtotalCzk ?? 0), 0);
   const hasPrices = status === "ACTIVE";
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-	<Header />
-      <header className="border-b border-zinc-900/80 bg-zinc-950/70 backdrop-blur">
+    <main className="min-h-screen bg-white text-zinc-900">
+      <Header />
+
+      <header className="border-b border-zinc-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div>
-            <div className="text-xl font-semibold tracking-tight">POPTÁVKA</div>
-            <div className="text-sm text-zinc-400">
+            <div className="text-xl font-semibold tracking-tight text-zinc-900">POPTÁVKA</div>
+            <div className="text-sm text-zinc-500">
               Nezávazná poptávka. Uvedené ceny budou potvrzeny v nabídce.
             </div>
           </div>
+
           <Link
             href="/catalog"
-            className="rounded-xl border border-zinc-800 bg-zinc-950/40 px-4 py-2 text-sm font-semibold text-zinc-200 hover:bg-zinc-900"
+            className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
           >
             ← Zpět do katalogu
           </Link>
@@ -76,13 +77,19 @@ export default async function CartPage() {
 
       <div className="mx-auto max-w-5xl px-4 py-10">
         {status === "PENDING" && (
-          <div className="mb-6 rounded-2xl border border-amber-400/25 bg-amber-400/10 px-5 py-4 text-amber-100">
+          <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-amber-900">
             <div className="font-semibold">Účet čeká na schválení</div>
-            <div className="mt-1 text-sm opacity-90">Ceny se zobrazí po aktivaci velkoodběru.</div>
+            <div className="mt-1 text-sm">
+              Ceny se zobrazí po aktivaci velkoodběru.
+            </div>
           </div>
         )}
 
-        <CartClient items={items} hasPrices={hasPrices} totalText={hasPrices ? formatCzk(totalCzk) : null} />
+        <CartClient
+          items={items}
+          hasPrices={hasPrices}
+          totalText={hasPrices ? formatCzk(totalCzk) : null}
+        />
       </div>
     </main>
   );

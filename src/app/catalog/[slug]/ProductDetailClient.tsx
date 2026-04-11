@@ -15,7 +15,7 @@ type Props = {
     priceLabel: React.ReactNode;
     gallery: string[];
     decorThumbs: string[];
-    decors: { id: string; label: string; swatchUrl: string }[];
+    decors: { id: string; label: string; swatchUrl: string; imageUrl: string }[];
   };
   canOrder: boolean;
 };
@@ -25,7 +25,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
 
   const [activeImage, setActiveImage] = useState(0);
   const [decor, setDecor] = useState(product.decors?.[0]?.id ?? "");
-  const [withFelt, setWithFelt] = useState<"WITH" | "WITHOUT">("WITHOUT");
   const [qty, setQty] = useState(1);
 
   const decorDetailsRef = useRef<HTMLDetailsElement | null>(null);
@@ -35,14 +34,23 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
     [decor, product.decors]
   );
 
+  const activeDecor = useMemo(
+    () => product.decors.find((d) => d.id === decor),
+    [decor, product.decors]
+  );
+
   const safeQty = Math.max(1, Math.min(999, qty));
 
   const swatches = useMemo(() => {
-    return (product.decors ?? []).slice(0, 8);
+    return product.decors ?? [];
   }, [product.decors]);
 
   const gallery = product.gallery?.length ? product.gallery : ["/products/placeholder.jpg"];
-  const activeSrc = gallery[Math.min(activeImage, gallery.length - 1)] || "/products/placeholder.jpg";
+
+  const activeSrc =
+    activeImage === 0
+      ? activeDecor?.imageUrl || gallery[0] || "/products/placeholder.jpg"
+      : gallery[Math.min(activeImage, gallery.length - 1)] || "/products/placeholder.jpg";
 
   function closeDecorDropdown() {
     if (decorDetailsRef.current) decorDetailsRef.current.open = false;
@@ -50,18 +58,18 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
 
   function selectDecor(id: string) {
     setDecor(id);
+    setActiveImage(0);
     closeDecorDropdown();
   }
 
   return (
     <div className="grid gap-8 lg:grid-cols-12">
-      {/* LEFT: gallery */}
       <div className="lg:col-span-7">
-        <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-900/25">
-          <div className="relative aspect-[4/3] w-full bg-zinc-950/40">
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+          <div className="relative aspect-[4/3] w-full bg-zinc-100">
             <Image
               src={activeSrc}
-              alt={product.name}
+              alt={`${product.name} – ${decorLabel}`}
               fill
               sizes="(max-width: 1024px) 100vw, 55vw"
               className="object-cover"
@@ -73,7 +81,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                 <button
                   type="button"
                   onClick={() => setActiveImage((v) => (v - 1 + gallery.length) % gallery.length)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-2xl border border-zinc-800 bg-zinc-950/60 text-sm font-semibold text-zinc-100 hover:bg-zinc-900"
+                  className="absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-2xl border border-zinc-200 bg-white/90 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
                   aria-label="Předchozí"
                 >
                   ←
@@ -81,7 +89,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                 <button
                   type="button"
                   onClick={() => setActiveImage((v) => (v + 1) % gallery.length)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-2xl border border-zinc-800 bg-zinc-950/60 text-sm font-semibold text-zinc-100 hover:bg-zinc-900"
+                  className="absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-2xl border border-zinc-200 bg-white/90 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
                   aria-label="Další"
                 >
                   →
@@ -90,16 +98,16 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             )}
 
             <div className="absolute left-4 top-4">
-              <span className="rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-100 backdrop-blur">
+              <span className="rounded-full border border-zinc-200 bg-white/90 px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-800 backdrop-blur">
                 {(product.collection || "COLLECTION").toUpperCase()}
               </span>
             </div>
           </div>
 
-          <div className="border-t border-zinc-900 bg-zinc-950/30 p-4">
-            <div className="mb-2 text-xs font-semibold text-zinc-400">Vzory dekoru</div>
+          <div className="border-t border-zinc-200 bg-white p-4">
+            <div className="mb-2 text-xs font-semibold text-zinc-500">Vzory dekoru</div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {swatches.map((d) => {
                 const isActive = d.id === decor;
                 return (
@@ -108,15 +116,15 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                     type="button"
                     onClick={() => selectDecor(d.id)}
                     className={[
-                      "h-16 w-16 overflow-hidden rounded-xl border bg-zinc-900/30 hover:border-zinc-700",
-                      isActive ? "border-white/60" : "border-zinc-800",
+                      "h-16 w-16 shrink-0 overflow-hidden rounded-xl border bg-white transition hover:border-zinc-300",
+                      isActive ? "border-black" : "border-zinc-200",
                     ].join(" ")}
                     aria-label={d.label}
                     title={d.label}
                   >
                     <div className="relative h-full w-full">
                       <Image src={d.swatchUrl} alt={d.label} fill className="object-cover" />
-                      {isActive && <div className="absolute inset-0 ring-2 ring-white/30" />}
+                      {isActive && <div className="absolute inset-0 ring-2 ring-black/20" />}
                     </div>
                   </button>
                 );
@@ -126,39 +134,42 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
         </div>
       </div>
 
-      {/* RIGHT: product info + variants */}
       <div className="lg:col-span-5">
-        <div className="rounded-2xl border border-zinc-900 bg-zinc-900/25 p-6">
-          <div className="text-xl font-semibold tracking-tight">{product.name}</div>
-          <div className="mt-2 text-sm text-zinc-400">{product.description || "—"}</div>
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="text-xl font-semibold tracking-tight text-zinc-900">{product.name}</div>
+          <div className="mt-2 text-sm text-zinc-500">{product.description || "—"}</div>
 
           <div className="mt-6">
             <div className="text-xs text-zinc-500">Cena</div>
-            <div className="mt-1 text-3xl font-semibold tracking-tight">{product.priceLabel}</div>
+            <div className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
+              {product.priceLabel}
+            </div>
           </div>
 
           <div className="mt-8 grid gap-5">
             <div>
-              <div className="mb-2 text-xs font-semibold text-zinc-400">Vyberte dekor:</div>
+              <div className="mb-2 text-xs font-semibold text-zinc-500">Vyberte dekor:</div>
 
               <details
                 ref={decorDetailsRef}
-                className="group rounded-2xl border border-zinc-800 bg-zinc-950/40"
+                className="group rounded-2xl border border-zinc-200 bg-white"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-zinc-100">
+                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-zinc-900">
                   <span>{decorLabel}</span>
-                  <span className="text-zinc-500 transition group-open:rotate-180">▾</span>
+                  <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                 </summary>
 
-                <div className="border-t border-zinc-800 p-2">
+                <div className="border-t border-zinc-200 p-2">
                   {product.decors.map((d) => (
                     <button
                       key={d.id}
                       type="button"
                       onClick={() => selectDecor(d.id)}
                       className={[
-                        "w-full rounded-xl px-3 py-2 text-left text-sm font-semibold hover:bg-zinc-900",
-                        decor === d.id ? "bg-white text-zinc-950 hover:bg-zinc-200" : "text-zinc-200",
+                        "w-full rounded-xl px-3 py-2 text-left text-sm font-semibold transition",
+                        decor === d.id
+                          ? "bg-black text-white hover:bg-zinc-800"
+                          : "text-zinc-900 hover:bg-zinc-50",
                       ].join(" ")}
                     >
                       {d.label}
@@ -169,43 +180,12 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold text-zinc-400">Vyberte variantu:</div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setWithFelt("WITHOUT")}
-                  className={[
-                    "h-12 flex-1 rounded-2xl border px-4 text-sm font-semibold transition",
-                    withFelt === "WITHOUT"
-                      ? "border-zinc-700 bg-white text-zinc-950"
-                      : "border-zinc-800 bg-zinc-950/40 text-zinc-200 hover:bg-zinc-900",
-                  ].join(" ")}
-                >
-                  Bez filcu
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setWithFelt("WITH")}
-                  className={[
-                    "h-12 flex-1 rounded-2xl border px-4 text-sm font-semibold transition",
-                    withFelt === "WITH"
-                      ? "border-zinc-700 bg-white text-zinc-950"
-                      : "border-zinc-800 bg-zinc-950/40 text-zinc-200 hover:bg-zinc-900",
-                  ].join(" ")}
-                >
-                  S filcem
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-2 text-xs font-semibold text-zinc-400">Počet kusů</div>
+              <div className="mb-2 text-xs font-semibold text-zinc-500">Počet kusů</div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setQty((v) => Math.max(1, v - 1))}
-                  className="h-12 w-12 rounded-2xl border border-zinc-800 bg-zinc-950/40 text-lg font-semibold text-zinc-100 hover:bg-zinc-900"
+                  className="h-12 w-12 rounded-2xl border border-zinc-200 bg-white text-lg font-semibold text-zinc-900 transition hover:bg-zinc-50"
                 >
                   −
                 </button>
@@ -214,13 +194,13 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                   value={safeQty}
                   onChange={(e) => setQty(Number(e.target.value || 1))}
                   inputMode="numeric"
-                  className="h-12 w-full rounded-2xl border border-zinc-800 bg-zinc-950/40 px-4 text-center text-sm font-semibold text-zinc-100 outline-none focus:border-zinc-700"
+                  className="h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-center text-sm font-semibold text-zinc-900 outline-none focus:border-zinc-400"
                 />
 
                 <button
                   type="button"
                   onClick={() => setQty((v) => Math.min(999, v + 1))}
-                  className="h-12 w-12 rounded-2xl border border-zinc-800 bg-zinc-950/40 text-lg font-semibold text-zinc-100 hover:bg-zinc-900"
+                  className="h-12 w-12 rounded-2xl border border-zinc-200 bg-white text-lg font-semibold text-zinc-900 transition hover:bg-zinc-50"
                 >
                   +
                 </button>
@@ -232,7 +212,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             {canOrder ? (
               <button
                 type="button"
-                className="h-12 w-full rounded-2xl bg-white text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
+                className="h-12 w-full rounded-2xl bg-black text-sm font-semibold text-white transition hover:bg-zinc-800"
                 onClick={async () => {
                   try {
                     const res = await fetch("/api/cart/add", {
@@ -242,7 +222,6 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
                         productId: product.id,
                         qty: safeQty,
                         decor: decorLabel,
-                        felt: withFelt === "WITH" ? "S filcem" : "Bez filcu",
                       }),
                     });
 
@@ -264,7 +243,7 @@ export default function ProductDetailClient({ product, canOrder }: Props) {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-white text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
+                className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-black text-sm font-semibold text-white transition hover:bg-zinc-800"
               >
                 Přihlásit a vytvořit poptávku
               </Link>

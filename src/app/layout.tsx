@@ -1,4 +1,5 @@
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 export const metadata = {
   title: "VASCO – katalog",
@@ -8,8 +9,18 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="cs" suppressHydrationWarning>
-      <body suppressHydrationWarning className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
-        {children}
+      <body className="bg-white text-zinc-900 antialiased">
+        <div className="flex min-h-screen flex-col">
+          
+          {/* CONTENT */}
+          <main className="flex-1">
+            {children}
+          </main>
+
+          {/* FOOTER */}
+          <Footer />
+
+        </div>
       </body>
     </html>
   );

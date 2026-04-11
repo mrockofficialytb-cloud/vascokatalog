@@ -1,10 +1,14 @@
 import { Suspense } from "react";
+import Header from "@/components/Header";
 import ResetPasswordClient from "./ResetPasswordClient";
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
-      <ResetPasswordClient />
-    </Suspense>
+    <>
+      <Header />
+      <Suspense fallback={<div className="min-h-screen bg-white" />}>
+        <ResetPasswordClient />
+      </Suspense>
+    </>
   );
 }
