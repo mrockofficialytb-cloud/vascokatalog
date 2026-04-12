@@ -275,7 +275,7 @@ const RIFFCELLO_DECORS_BY_SLUG: Record<string, Decor[]> = {
       id: "cooper345",
       label: "Měď",
       swatchUrl: "/products/decors/med.jpeg",
-      imageUrl: "/products/riffcello/no-image.png",
+      imageUrl: "/products/riffcello/riffcello-cooper.png",
     },
     {
       id: "black",
@@ -317,7 +317,7 @@ const RIFFCELLO_DECORS_BY_SLUG: Record<string, Decor[]> = {
       id: "cooper",
       label: "Měď - lišta",
       swatchUrl: "/products/decors/med.jpeg",
-      imageUrl: "/products/riffcello/listy/no-image.png",
+      imageUrl: "/products/riffcello/listy/riffcello-cooper.png",
     },
     {
       id: "black",
